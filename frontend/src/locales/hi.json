@@ -1,0 +1,74 @@
+{
+  "app": {
+    "name": "वॉयसएड",
+    "tagline": "आपका आवाज सहायक"
+  },
+  "home": {
+    "title": "वॉयसएड",
+    "subtitle": "बोलने के लिए टैप करें",
+    "listening": "सुन रहा हूं...",
+    "processing": "प्रोसेस कर रहा हूं...",
+    "speaking": "बोल रहा हूं...",
+    "offline": "ऑफलाइन मोड",
+    "online": "ऑनलाइन मोड",
+    "tapToSpeak": "बोलने के लिए बटन दबाएं",
+    "tapAgain": "समाप्त होने पर फिर से दबाएं",
+    "helpText": "खेती, स्वास्थ्य, सुरक्षा या दैनिक कार्यों के बारे में पूछें"
+  },
+  "settings": {
+    "title": "सेटिंग्स",
+    "language": "भाषा",
+    "selectLanguage": "भाषा चुनें",
+    "voiceSpeed": "आवाज की गति",
+    "slow": "धीमा",
+    "normal": "सामान्य",
+    "fast": "तेज",
+    "offlineMode": "ऑफलाइन मोड",
+    "offlineModeDesc": "इंटरनेट के बिना डिवाइस AI का उपयोग करें",
+    "batterySaver": "बैटरी सेवर",
+    "batterySaverDesc": "बिजली की खपत कम करें",
+    "notifications": "सूचनाएं",
+    "notificationsDesc": "रिमाइंडर सूचनाएं सक्षम करें",
+    "about": "के बारे में",
+    "version": "संस्करण",
+    "caretaker": "देखभालकर्ता सेटिंग्स",
+    "caretakerPhone": "देखभालकर्ता फोन नंबर",
+    "save": "सहेजें",
+    "cancel": "रद्द करें"
+  },
+  "reminders": {
+    "title": "रिमाइंडर",
+    "addReminder": "रिमाइंडर जोड़ें",
+    "medicine": "दवा",
+    "meal": "भोजन",
+    "custom": "कस्टम",
+    "time": "समय",
+    "frequency": "आवृत्ति",
+    "daily": "दैनिक",
+    "weekly": "साप्ताहिक",
+    "once": "एक बार",
+    "active": "सक्रिय",
+    "inactive": "निष्क्रिय",
+    "noReminders": "कोई रिमाइंडर सेट नहीं",
+    "delete": "हटाएं",
+    "edit": "संपादित करें"
+  },
+  "knowledge": {
+    "agriculture": "कृषि",
+    "health": "स्वास्थ्य",
+    "safety": "सुरक्षा",
+    "general": "सामान्य"
+  },
+  "status": {
+    "online": "ऑनलाइन",
+    "offline": "ऑफलाइन",
+    "battery": "बैटरी",
+    "lowBattery": "कम बैटरी - पावर सेविंग मोड सक्रिय"
+  },
+  "errors": {
+    "micPermission": "माइक्रोफोन अनुमति अस्वीकृत",
+    "networkError": "नेटवर्क त्रुटि हुई",
+    "processingError": "अनुरोध प्रोसेस करने में विफल",
+    "tryAgain": "कृपया पुनः प्रयास करें"
+  }
+}

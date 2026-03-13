@@ -1,0 +1,74 @@
+{
+  "app": {
+    "name": "VoiceAid",
+    "tagline": "Your Voice Assistant"
+  },
+  "home": {
+    "title": "VoiceAid",
+    "subtitle": "Tap to speak",
+    "listening": "Listening...",
+    "processing": "Processing...",
+    "speaking": "Speaking...",
+    "offline": "Offline Mode",
+    "online": "Online Mode",
+    "tapToSpeak": "Tap the button to speak",
+    "tapAgain": "Tap again when done",
+    "helpText": "Ask about farming, health, safety, or daily tasks"
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "selectLanguage": "Select Language",
+    "voiceSpeed": "Voice Speed",
+    "slow": "Slow",
+    "normal": "Normal",
+    "fast": "Fast",
+    "offlineMode": "Offline Mode",
+    "offlineModeDesc": "Use on-device AI when no internet",
+    "batterySaver": "Battery Saver",
+    "batterySaverDesc": "Reduce power consumption",
+    "notifications": "Notifications",
+    "notificationsDesc": "Enable reminder notifications",
+    "about": "About",
+    "version": "Version",
+    "caretaker": "Caretaker Settings",
+    "caretakerPhone": "Caretaker Phone Number",
+    "save": "Save",
+    "cancel": "Cancel"
+  },
+  "reminders": {
+    "title": "Reminders",
+    "addReminder": "Add Reminder",
+    "medicine": "Medicine",
+    "meal": "Meal",
+    "custom": "Custom",
+    "time": "Time",
+    "frequency": "Frequency",
+    "daily": "Daily",
+    "weekly": "Weekly",
+    "once": "Once",
+    "active": "Active",
+    "inactive": "Inactive",
+    "noReminders": "No reminders set",
+    "delete": "Delete",
+    "edit": "Edit"
+  },
+  "knowledge": {
+    "agriculture": "Agriculture",
+    "health": "Health",
+    "safety": "Safety",
+    "general": "General"
+  },
+  "status": {
+    "online": "Online",
+    "offline": "Offline",
+    "battery": "Battery",
+    "lowBattery": "Low battery - Power saving mode active"
+  },
+  "errors": {
+    "micPermission": "Microphone permission denied",
+    "networkError": "Network error occurred",
+    "processingError": "Failed to process request",
+    "tryAgain": "Please try again"
+  }
+}
