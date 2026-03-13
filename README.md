@@ -1,60 +1,87 @@
-# VoiceAid - AI-Powered Voice Assistant for Elderly Users
+# VoiceAid - AI-Powered Voice Assistant for Elderly & Non-Literate Users
 
-A comprehensive voice assistant system combining React Native mobile app, Node.js backend with AWS integration, and Python-based voice AI processing using Groq API.
+An AWS-native voice assistant system designed for elderly and non-literate users, featuring real-time speech-to-speech interaction, offline capabilities, and knowledge-based responses.
 
-## 🎯 Overview
+## 🎯 Vision: Orality-First Digital Inclusion
 
-VoiceAid enables elderly and non-literate users to interact with an AI assistant using voice. The system processes voice queries, retrieves relevant information from a knowledge base, and provides intelligent responses.
+VoiceAid bridges the digital divide for 700+ million non-literate adults worldwide by replacing text-based interfaces with natural voice interaction. Built on AWS services, it provides:
 
-## ✨ Features
+- **Real-time Speech-to-Speech**: Sub-500ms latency using Amazon Nova Sonic
+- **Orality-First Design**: Natural conversation without literacy requirements
+- **Offline Resilience**: Works in low-connectivity areas with AWS Amplify DataStore
+- **Knowledge-Grounded**: RAG system with AWS Bedrock for accurate, localized information
+- **Voice Biometrics**: Secure, password-less authentication
 
-### Mobile App (Frontend)
-- **Voice Recording**: Record user's voice with a simple tap
-- **AI Integration**: Send audio to backend API and receive AI responses
-- **Audio Playback**: Play AI-generated responses
-- **Simple UI**: Large circular button with color-coded states
-- **Caretaker Setup**: Configure caretaker contact information
-- **Settings**: Basic app settings
+## 🏗️ Architecture
 
-### Backend API
-- **Voice Processing**: Transcribe and process voice queries
-- **Knowledge Base**: AWS Bedrock integration for intelligent responses
-- **Document Management**: Upload and manage knowledge documents
-- **S3 Storage**: Secure document storage
-- **RESTful API**: Well-documented endpoints
+```
+Mobile App (React Native + Amplify DataStore)
+    ↓ WebSocket Streaming
+Backend API (Node.js + Express)
+    ↓
+├─ Amazon Nova Sonic → Real-time speech-to-speech
+├─ Amazon Lex V2 → Intent recognition & dialogue
+├─ AWS Bedrock Knowledge Base → RAG system
+├─ AWS S3 → Document storage
+└─ AWS Amplify → Offline sync
+```
 
-### Voice AI Service
-- **Speech-to-Text**: Groq API-powered transcription
-- **Text-to-Speech**: Generate natural voice responses
-- **Multi-language Support**: Process queries in multiple languages
+## ✨ Key Features
+
+### For Users
+- **One-Button Interface**: Large, color-coded button (Blue=Listening, Green=Processing, Orange=Speaking)
+- **Voice-Only Interaction**: No reading or typing required
+- **Offline Mode**: Basic functions work without internet
+- **Medicine Reminders**: Voice-based medication scheduling
+- **Fraud Detection**: Warns about common phone scams
+- **Knowledge Base**: Agriculture, health, and safety information
+
+### Technical Features
+- Real-time bidirectional audio streaming (WebSocket)
+- Amazon Nova Sonic for natural speech processing
+- Amazon Lex V2 for intent recognition (6 intents)
+- AWS Amplify DataStore for offline-first architecture
+- Knowledge retrieval with AWS Bedrock
+- Voice biometric authentication (planned)
 
 ## 🚀 Quick Start
-
-See [INTEGRATION_GUIDE.md](INTEGRATION_GUIDE.md) for complete setup instructions.
 
 ### Prerequisites
 - Node.js 16+
 - Python 3.8+
 - AWS Account with Bedrock access
-- Groq API key
-- Expo CLI
+- Expo CLI: `npm install -g expo-cli`
+- Amplify CLI: `npm install -g @aws-amplify/cli`
 
 ### Installation
 
 1. **Clone and install dependencies**:
 ```bash
+git clone https://github.com/pwnjoshi/VoiceAid.git
+cd VoiceAid
 npm install
-cd backend && npm install
+cd backend && npm install && cd ..
 pip install -r requirements.txt
 ```
 
-2. **Configure environment**:
+2. **Configure AWS services**:
 ```bash
-cp .env.example .env
-# Edit .env with your credentials
+# Setup Amazon Lex Bot
+cd scripts && node setup-lex-bot.js
+
+# Setup AWS Amplify
+amplify init
+amplify add api
+amplify push
 ```
 
-3. **Start services**:
+3. **Configure environment**:
+```bash
+cp .env.example .env
+# Edit .env with your AWS credentials and service IDs
+```
+
+4. **Start services**:
 ```bash
 # Terminal 1: Backend
 cd backend && npm start
@@ -67,18 +94,27 @@ npx expo start
 
 ```
 VoiceAid/
-├── app/                    # React Native frontend
-├── src/                    # Frontend source code
-│   ├── components/         # UI components
-│   ├── screens/           # App screens
-│   └── services/          # API & audio services
-├── backend/               # Node.js backend
-│   ├── controllers/       # Request handlers
-│   ├── services/         # Business logic
-│   ├── routes/           # API routes
-│   └── docs/             # Documentation
-├── voice_ai_*.py         # Python voice AI services
-└── requirements.txt      # Python dependencies
+├── app/                          # React Native screens
+├── src/
+│   ├── components/               # UI components (VoiceButton)
+│   ├── config/                   # API & Amplify configuration
+│   ├── screens/                  # App screens
+│   └── services/                 # Audio & API services
+├── backend/
+│   ├── controllers/              # Request handlers
+│   ├── services/                 # Business logic
+│   │   ├── novaSonicService.js  # Nova Sonic integration
+│   │   ├── lexService.js        # Lex V2 integration
+│   │   ├── streamingService.js  # WebSocket streaming
+│   │   ├── bedrockService.js    # Bedrock AI
+│   │   └── knowledgeService.js  # Knowledge base
+│   ├── routes/                   # API endpoints
+│   └── server.js                # Express + WebSocket server
+├── amplify/
+│   └── schema.graphql           # DataStore schema
+└── scripts/
+    ├── setup-lex-bot.js         # Automated Lex setup
+    └── setup-amplify.sh         # Amplify initialization
 ```
 
 ## 🔗 API Endpoints
@@ -87,52 +123,43 @@ VoiceAid/
 - `POST /api/voice/v2/process` - Process voice audio
 - `POST /api/voice/v2/text` - Process text query
 - `GET /api/voice/v2/status` - Service status
+- `WS /stream` - WebSocket streaming
 
 ### Knowledge Base
 - `GET /api/knowledge/v2/query` - Query knowledge base
 - `POST /api/knowledge/v2/upload` - Upload documents
 - `GET /api/knowledge/v2/documents` - List documents
+- `GET /api/knowledge/v2/stats` - Statistics
 
-See [backend/docs/API_DOCUMENTATION.md](backend/docs/API_DOCUMENTATION.md) for complete API reference.
-
-## 🎨 Button States
-
-- **Gray (Idle)**: Ready to record
-- **Blue (Listening)**: Recording user's voice
-- **Green (Processing)**: Sending audio to backend API
-- **Orange (Speaking)**: Playing AI response
-
-## 🔧 Configuration
+## 🛠️ Technology Stack
 
 ### Frontend
-Edit `src/config/api.js` or set environment variable:
-```bash
-EXPO_PUBLIC_API_URL=http://your-backend-url:3000
-```
+- React Native + Expo
+- AWS Amplify (Auth, DataStore, Storage)
+- expo-av (Audio recording/playback)
+- WebSocket client
 
 ### Backend
-Required in `backend/.env`:
-```
-AWS_REGION=us-east-1
-AWS_ACCESS_KEY_ID=your_key
-AWS_SECRET_ACCESS_KEY=your_secret
-S3_BUCKET_NAME=voiceaid-knowledge-docs
-KNOWLEDGE_BASE_ID=your_kb_id
-```
+- Node.js + Express
+- AWS SDK v3
+- WebSocket (ws)
+- Multer (file uploads)
 
-### Voice AI
-Edit `config.py`:
-```python
-GROQ_API_KEY = "your_groq_api_key"
-```
+### AWS Services
+- **Amazon Nova Sonic** - Real-time speech-to-speech
+- **Amazon Lex V2** - Intent recognition & dialogue
+- **AWS Bedrock** - AI responses & knowledge base
+- **AWS S3** - Document storage
+- **AWS Amplify** - Offline sync & authentication
+- **AWS CloudWatch** - Monitoring
 
-## 🌐 AWS Setup
+## 📚 Documentation
 
-1. **S3 Bucket**: Create `voiceaid-knowledge-docs` with folder structure
-2. **Bedrock Knowledge Base**: Set up and connect to S3
-3. **IAM Permissions**: Configure S3 and Bedrock access
-
-See [backend/docs/AWS_SETUP.md](backend/docs/AWS_SETUP.md) for detailed instructions.
+- [AWS_NATIVE_IMPLEMENTATION.md](AWS_NATIVE_IMPLEMENTATION.md) - AWS setup guide
+- [DEPLOYMENT_CHECKLIST.md](DEPLOYMENT_CHECKLIST.md) - Production deployment
+- [PROJECT_STATUS.md](PROJECT_STATUS.md) - Current implementation status
+- [backend/README.md](backend/README.md) - Backend API documentation
+- [backend/docs/](backend/docs/) - Detailed API & AWS guides
 
 ## 🧪 Testing
 
@@ -140,91 +167,99 @@ See [backend/docs/AWS_SETUP.md](backend/docs/AWS_SETUP.md) for detailed instruct
 # Backend tests
 cd backend && npm test
 
-# Voice AI tests
-python test_setup.py
-python test_api_key.py
+# Test WebSocket connection
+node -e "const WebSocket = require('ws'); const ws = new WebSocket('ws://localhost:3000/stream'); ws.on('open', () => console.log('Connected!'));"
 
-# API health check
+# Health check
 curl http://localhost:3000/health
 ```
 
-## 📱 Running the App
+## 🌐 AWS Setup
 
-### Development
+### 1. Request Nova Sonic Access
+1. Go to AWS Bedrock console
+2. Request preview access to Nova Sonic
+3. Wait for approval (24-48 hours)
+
+### 2. Create Lex Bot
 ```bash
-# Start backend
-cd backend && npm start
-
-# Start frontend (new terminal)
-npx expo start
+cd scripts
+node setup-lex-bot.js
 ```
 
-### Production
-See [backend/DEPLOYMENT.md](backend/DEPLOYMENT.md) for AWS deployment.
+### 3. Setup Amplify
+```bash
+amplify init
+amplify add api
+amplify add auth
+amplify push
+```
 
-## 🛠️ Tech Stack
+### 4. Configure S3 & Bedrock
+- Create S3 bucket: `voiceaid-knowledge-docs`
+- Create Bedrock Knowledge Base
+- Upload documents to S3
+- Connect Knowledge Base to S3
 
-### Frontend
-- React Native
-- Expo
-- expo-av (audio)
-- expo-router (navigation)
+See [AWS_NATIVE_IMPLEMENTATION.md](AWS_NATIVE_IMPLEMENTATION.md) for detailed instructions.
 
-### Backend
-- Node.js / Express
-- AWS SDK (S3, Bedrock)
-- Multer (file uploads)
+## 🎯 Use Cases
 
-### Voice AI
-- Python 3.8+
-- Groq API
-- Speech recognition libraries
+### Agriculture
+- Pest control advice
+- Seasonal planting guidance
+- Market price information
+- Weather updates
 
-## 📚 Documentation
+### Healthcare
+- Medicine reminders
+- Symptom checking
+- Basic health advice
+- Doctor appointment scheduling
 
-- [Integration Guide](INTEGRATION_GUIDE.md) - Complete setup guide
-- [Backend API](backend/docs/API_DOCUMENTATION.md) - API reference
-- [AWS Setup](backend/docs/AWS_SETUP.md) - AWS configuration
-- [Voice AI](README_VOICE_AI.md) - Voice AI service details
-- [Deployment](backend/DEPLOYMENT.md) - Production deployment
+### Safety
+- Fraud detection & warnings
+- Emergency contact calling
+- OTP scam prevention
+- Safety tips
 
-## 🤝 Team Contributions
+## 🚀 Deployment
 
-- **Vidushi**: Frontend React Native app, screens, and services
-- **Bhumika**: Backend API, AWS integration, knowledge base system
-- **Voice AI Team**: Groq API integration, voice processing services
+See [DEPLOYMENT_CHECKLIST.md](DEPLOYMENT_CHECKLIST.md) for production deployment guide.
 
-## 🐛 Troubleshooting
+Quick deploy to AWS:
+```bash
+cd backend
+npm run deploy
+```
 
-### Backend Issues
-- Verify `.env` file exists with all required variables
-- Check AWS credentials are valid
-- Ensure port 3000 is available
+## 🤝 Contributing
 
-### Voice AI Issues
-- Install Python dependencies: `pip install -r requirements.txt`
-- Verify Groq API key in `config.py`
-- Test with: `python test_api_key.py`
+This project was built for the AWS AIdeas 2025 competition.
 
-### Frontend Issues
-- Verify backend is running
-- Check `API_BASE_URL` in `src/config/api.js`
-- Use device IP instead of localhost for mobile testing
-
-## 🎯 Future Enhancements
-
-- Offline mode with cached responses
-- Multiple language support
-- Emergency contact quick dial
-- Voice command shortcuts
-- Audio history playback
-- Real-time translation
-- Health monitoring integration
+**Team Members**: [Your team names]
 
 ## 📄 License
 
 Private - VoiceAid Project
 
+## 🆘 Support
+
+For issues or questions:
+1. Check [PROJECT_STATUS.md](PROJECT_STATUS.md) for current status
+2. Review [AWS_NATIVE_IMPLEMENTATION.md](AWS_NATIVE_IMPLEMENTATION.md) for setup help
+3. Check backend logs in `backend/logs/`
+4. Review AWS CloudWatch logs
+
+## 🎉 Acknowledgments
+
+Built with AWS services:
+- Amazon Nova Sonic (Preview)
+- Amazon Lex V2
+- AWS Bedrock
+- AWS Amplify
+- AWS S3
+
 ---
 
-For detailed setup instructions, see [INTEGRATION_GUIDE.md](INTEGRATION_GUIDE.md)
+**Making technology accessible to everyone, one voice at a time.**
