@@ -1,106 +1,69 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Alert } from 'react-native';
-import VoiceButton from '../components/VoiceButton';
-import AudioService from '../services/AudioService';
-import ApiService from '../services/ApiService';
+import ImprovedVoiceButton from '../components/ImprovedVoiceButton';
+import OfflineAIService from '../services/OfflineAIService';
+import EnhancedOfflineService from '../services/EnhancedOfflineService';
 
 /**
- * HomeScreen - Main screen with voice interaction button
+ * HomeScreen - Main screen with enhanced offline voice interaction
  */
 const HomeScreen = () => {
-  const [state, setState] = useState('idle'); // idle, listening, processing, speaking
-  const [statusText, setStatusText] = useState('Tap to speak');
+  const [networkStatus, setNetworkStatus] = useState({ isOnline: true, batteryLevel: 100 });
 
-  // Cleanup on unmount
   useEffect(() => {
-    return () => {
-      AudioService.cleanup();
+    // Check network status periodically
+    const checkStatus = () => {
+      const status = OfflineAIService.getNetworkStatus();
+      setNetworkStatus(status);
     };
+
+    checkStatus();
+    const interval = setInterval(checkStatus, 5000);
+
+    return () => clearInterval(interval);
   }, []);
 
   /**
-   * Handle voice button press
+   * Handle voice response
    */
-  const handleVoicePress = async () => {
-    if (state === 'idle') {
-      // Start recording
-      await startRecording();
-    } else if (state === 'listening') {
-      // Stop recording and process
-      await stopRecordingAndProcess();
-    }
-  };
+  const handleResponse = async (result) => {
+    console.log('Voice response:', result);
+    
+    // Save query for learning
+    await EnhancedOfflineService.saveQuery(
+      result.query || '',
+      result,
+      null // User can mark as helpful later
+    );
 
-  /**
-   * Start recording user's voice
-   */
-  const startRecording = async () => {
-    try {
-      setState('listening');
-      setStatusText('Listening...');
-      
-      await AudioService.startRecording();
-    } catch (error) {
-      console.error('Recording error:', error);
-      Alert.alert('Error', 'Failed to start recording. Please check microphone permissions.');
-      setState('idle');
-      setStatusText('Tap to speak');
-    }
-  };
-
-  /**
-   * Stop recording and send to backend
-   */
-  const stopRecordingAndProcess = async () => {
-    try {
-      // Stop recording
-      const audioUri = await AudioService.stopRecording();
-      
-      if (!audioUri) {
-        throw new Error('No audio recorded');
-      }
-
-      // Change to processing state
-      setState('processing');
-      setStatusText('Processing...');
-
-      // Send to backend API
-      const responseUri = await ApiService.sendVoiceMessage(audioUri);
-
-      // Change to speaking state
-      setState('speaking');
-      setStatusText('Speaking...');
-
-      // Play AI response
-      await AudioService.playAudio(responseUri);
-
-      // Return to idle state
-      setState('idle');
-      setStatusText('Tap to speak');
-    } catch (error) {
-      console.error('Processing error:', error);
-      Alert.alert('Error', 'Failed to process voice message. Please try again.');
-      setState('idle');
-      setStatusText('Tap to speak');
+    // Show response in UI if needed
+    if (!result.success) {
+      Alert.alert('Error', 'Failed to process your request. Please try again.');
     }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.statusText}>{statusText}</Text>
-      
-      <VoiceButton
-        state={state}
-        onPress={handleVoicePress}
-        disabled={state === 'processing' || state === 'speaking'}
-      />
+      <View style={styles.header}>
+        <Text style={styles.title}>VoiceAid</Text>
+        <Text style={styles.subtitle}>
+          {networkStatus.isOnline ? '🌐 Online Mode' : '📱 Offline Mode'}
+        </Text>
+        <Text style={styles.description}>
+          Your voice assistant that works anywhere, anytime
+        </Text>
+      </View>
 
-      <Text style={styles.instructionText}>
-        {state === 'idle' && 'Tap to start speaking'}
-        {state === 'listening' && 'Tap again when done'}
-        {state === 'processing' && 'Sending to AI...'}
-        {state === 'speaking' && 'AI is responding...'}
-      </Text>
+      <ImprovedVoiceButton onResponse={handleResponse} />
+
+      <View style={styles.footer}>
+        <Text style={styles.footerText}>
+          ✓ Works offline • ✓ Battery optimized • ✓ Always available
+        </Text>
+        <Text style={styles.helpText}>
+          Ask about farming, health, safety, or daily tasks
+        </Text>
+      </View>
     </View>
   );
 };
@@ -108,24 +71,49 @@ const HomeScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F5F5F5',
-    padding: 20,
+    backgroundColor: '#F9FAFB',
   },
-  statusText: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    marginBottom: 60,
-    color: '#333',
-    textAlign: 'center',
-  },
-  instructionText: {
-    fontSize: 20,
-    marginTop: 40,
-    color: '#666',
-    textAlign: 'center',
+  header: {
+    paddingTop: 60,
     paddingHorizontal: 20,
+    paddingBottom: 20,
+    alignItems: 'center',
+  },
+  title: {
+    fontSize: 36,
+    fontWeight: 'bold',
+    color: '#111827',
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 18,
+    color: '#6B7280',
+    marginBottom: 8,
+  },
+  description: {
+    fontSize: 16,
+    color: '#9CA3AF',
+    textAlign: 'center',
+  },
+  footer: {
+    position: 'absolute',
+    bottom: 20,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  footerText: {
+    fontSize: 14,
+    color: '#10B981',
+    fontWeight: '600',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  helpText: {
+    fontSize: 14,
+    color: '#6B7280',
+    textAlign: 'center',
   },
 });
 

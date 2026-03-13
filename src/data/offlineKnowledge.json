@@ -1,0 +1,110 @@
+{
+  "agriculture": {
+    "crops": {
+      "rice": {
+        "planting": "Plant rice in flooded fields. Sow seeds 2-3 cm deep. Space rows 20 cm apart. Best season: June-July (monsoon).",
+        "pests": "Common pests: Stem borer, leaf folder. Use neem oil spray. Mix 10ml neem oil per liter water. Spray early morning.",
+        "fertilizer": "Apply urea 50kg per acre after 20 days. Use DAP 25kg at planting. Add potash 12kg before flowering.",
+        "harvest": "Harvest when 80% grains turn golden yellow. Usually 120-140 days after planting. Cut and dry for 3-4 days."
+      },
+      "wheat": {
+        "planting": "Sow wheat in November. Seed rate: 40kg per acre. Row spacing: 20cm. Depth: 5cm.",
+        "pests": "Watch for aphids and termites. Use neem cake in soil. Spray neem oil if needed.",
+        "fertilizer": "Apply urea 50kg, DAP 50kg per acre. Split urea: half at sowing, half after 30 days.",
+        "harvest": "Harvest in March-April when grains are hard. Takes 120-150 days from sowing."
+      },
+      "corn": {
+        "planting": "Plant corn in rows 60cm apart. Seeds 20cm apart in row. Depth: 5cm. Season: February-March or July-August.",
+        "pests": "Common: Fall armyworm, stem borer. Remove affected leaves. Use neem spray weekly.",
+        "fertilizer": "Use compost 5 tons per acre. Add urea 60kg in 2 splits: at 20 and 40 days.",
+        "harvest": "Ready in 90-110 days. Harvest when kernels are firm and milky inside."
+      }
+    },
+    "general": {
+      "soil_preparation": "Plow field 2-3 times. Add organic manure 5-10 tons per acre. Level the field properly. Ensure good drainage.",
+      "irrigation": "Water early morning or evening. Check soil moisture by hand. If top 5cm is dry, water deeply. Avoid overwatering.",
+      "organic_pest_control": "Neem oil spray: 10ml per liter water. Garlic spray: Crush 100g garlic in 1 liter water, strain and spray. Chili spray: Boil 100g chili in water, cool and spray.",
+      "composting": "Mix kitchen waste, dry leaves, cow dung. Keep moist. Turn every week. Ready in 2-3 months. Use 5kg per plant."
+    }
+  },
+  "health": {
+    "common_ailments": {
+      "fever": {
+        "symptoms": "Body temperature above 100°F (37.8°C), feeling hot, sweating, weakness, body ache.",
+        "home_treatment": "Rest completely. Drink plenty of water and fluids. Take paracetamol 500mg every 6 hours. Sponge with lukewarm water.",
+        "when_to_see_doctor": "If fever lasts more than 3 days, temperature above 103°F, severe headache, difficulty breathing, or rash appears.",
+        "prevention": "Drink clean water. Wash hands frequently. Avoid mosquito bites. Get adequate sleep."
+      },
+      "cold_cough": {
+        "symptoms": "Runny nose, sneezing, cough, sore throat, mild fever, body ache.",
+        "home_treatment": "Drink warm water with honey and ginger. Steam inhalation 2-3 times daily. Gargle with salt water. Rest well.",
+        "when_to_see_doctor": "If cough lasts more than 2 weeks, blood in cough, high fever, chest pain, or difficulty breathing.",
+        "prevention": "Avoid cold drinks. Cover mouth when coughing. Wash hands regularly. Avoid crowded places during flu season."
+      },
+      "stomach_pain": {
+        "symptoms": "Pain in belly area, cramping, bloating, nausea, loss of appetite.",
+        "home_treatment": "Avoid heavy food. Drink warm water. Eat light food like rice, curd. Rest. Take antacid if needed.",
+        "when_to_see_doctor": "If pain is severe, lasts more than 6 hours, vomiting blood, black stool, or fever with pain.",
+        "prevention": "Eat fresh food. Drink clean water. Wash hands before eating. Avoid overeating."
+      },
+      "headache": {
+        "symptoms": "Pain in head, pressure feeling, sensitivity to light or sound.",
+        "home_treatment": "Rest in quiet dark room. Apply cold compress on forehead. Drink water. Take paracetamol if needed. Massage temples gently.",
+        "when_to_see_doctor": "If headache is sudden and severe, with fever and stiff neck, vision changes, or after head injury.",
+        "prevention": "Get adequate sleep. Drink enough water. Avoid stress. Eat regular meals."
+      }
+    },
+    "medicines": {
+      "paracetamol": {
+        "use": "For fever and pain relief",
+        "dosage": "Adults: 500-1000mg every 6-8 hours. Maximum 4000mg per day. Children: Consult doctor.",
+        "precautions": "Do not exceed maximum dose. Avoid alcohol. Take with food if stomach upset."
+      },
+      "antacid": {
+        "use": "For acidity and heartburn",
+        "dosage": "1-2 tablets after meals and at bedtime. Or as directed by doctor.",
+        "precautions": "Do not take with other medicines. Wait 2 hours. Drink plenty of water."
+      }
+    },
+    "first_aid": {
+      "cuts_wounds": "Wash with clean water. Apply pressure to stop bleeding. Clean with antiseptic. Cover with clean bandage. Change daily.",
+      "burns": "Cool with running water for 10 minutes. Do not apply ice, oil, or toothpaste. Cover with clean cloth. See doctor if severe.",
+      "snake_bite": "Keep calm. Immobilize affected part. Remove jewelry. Do not cut or suck wound. Rush to hospital immediately.",
+      "insect_bite": "Wash area with soap and water. Apply ice pack. Take antihistamine if itching. See doctor if swelling increases."
+    }
+  },
+  "safety": {
+    "fraud_awareness": {
+      "otp_scam": "NEVER share OTP (One Time Password) with anyone. Banks never ask for OTP on phone. OTP is only for you to enter on website or app.",
+      "lottery_scam": "You cannot win a lottery you did not enter. Do not send money to claim prize. Do not share bank details.",
+      "fake_call_scam": "Banks never call asking for full card number, CVV, or PIN. Do not share these details on phone. Hang up and call bank directly.",
+      "link_scam": "Do not click links in unknown messages. They can steal your information. Delete suspicious messages.",
+      "impersonation": "Verify caller identity before sharing information. Call back on official number. Do not trust caller ID alone."
+    },
+    "emergency_numbers": {
+      "police": "100 - For crime, theft, or danger",
+      "ambulance": "108 - For medical emergency",
+      "fire": "101 - For fire emergency",
+      "women_helpline": "1091 - For women in distress",
+      "child_helpline": "1098 - For child in need",
+      "disaster": "108 - For natural disaster help"
+    },
+    "home_safety": {
+      "fire_prevention": "Do not leave cooking unattended. Keep matchboxes away from children. Check gas connections regularly. Have fire extinguisher.",
+      "electrical_safety": "Do not touch switches with wet hands. Do not overload sockets. Check wiring regularly. Turn off appliances when not in use.",
+      "water_safety": "Boil drinking water or use filter. Store water in clean containers. Cover water storage. Clean tanks regularly."
+    }
+  },
+  "daily_living": {
+    "time_management": {
+      "morning_routine": "Wake up early. Drink water. Exercise or walk. Eat healthy breakfast. Plan your day.",
+      "medication_schedule": "Take medicines at same time daily. Keep medicine box organized. Set reminders. Do not skip doses.",
+      "meal_times": "Breakfast: 7-9 AM. Lunch: 12-2 PM. Dinner: 7-9 PM. Eat at regular times. Do not skip meals."
+    },
+    "communication": {
+      "making_calls": "Speak clearly and slowly. State your name first. Explain purpose of call. Listen carefully to response.",
+      "receiving_calls": "Answer politely. Verify caller identity. Do not share personal information to unknown callers. Ask to call back if unsure.",
+      "messages": "Keep messages short and clear. Read carefully before sending. Do not share sensitive information via message."
+    }
+  }
+}
