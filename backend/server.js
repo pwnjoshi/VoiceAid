@@ -80,11 +80,16 @@ app.use((req, res) => {
 });
 
 // Start server
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`🚀 VoiceAid Backend running on port ${PORT}`);
   console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🌍 Health check: http://localhost:${PORT}/health`);
   console.log(`📚 API Docs: http://localhost:${PORT}/`);
+  console.log(`🔌 WebSocket: ws://localhost:${PORT}/stream`);
 });
+
+// Initialize WebSocket streaming service
+const StreamingService = require('./services/streamingService');
+new StreamingService(server);
 
 module.exports = app;

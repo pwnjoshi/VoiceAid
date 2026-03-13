@@ -1,0 +1,60 @@
+# VoiceAid DataStore Schema
+# Offline-first data model for user context and conversation history
+
+type User @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  phoneNumber: String!
+  voicePrint: String
+  preferredLanguage: String
+  region: String
+  lastActive: AWSDateTime
+  conversations: [Conversation] @hasMany
+  reminders: [Reminder] @hasMany
+  settings: UserSettings @hasOne
+}
+
+type UserSettings @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  userId: ID!
+  caretakerPhone: String
+  caretakerName: String
+  medicationReminders: Boolean
+  fraudAlerts: Boolean
+  offlineMode: Boolean
+  voiceSpeed: Float
+}
+
+type Conversation @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  userId: ID!
+  timestamp: AWSDateTime!
+  userQuery: String!
+  systemResponse: String!
+  intent: String
+  category: String
+  confidence: Float
+  audioUrl: String
+  offline: Boolean
+}
+
+type Reminder @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  userId: ID!
+  title: String!
+  description: String
+  time: AWSTime!
+  frequency: String
+  active: Boolean!
+  lastTriggered: AWSDateTime
+}
+
+type KnowledgeDocument @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  category: String!
+  title: String!
+  content: String!
+  s3Key: String!
+  language: String
+  region: String
+  lastUpdated: AWSDateTime!
+}

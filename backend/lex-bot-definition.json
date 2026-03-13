@@ -1,0 +1,119 @@
+{
+  "name": "VoiceAidBot",
+  "description": "Orality-first voice assistant for non-literate and elderly users",
+  "intents": [
+    {
+      "name": "AgricultureQuery",
+      "description": "Handle farming and agriculture questions",
+      "sampleUtterances": [
+        "How do I stop pests on my crops",
+        "What should I plant this season",
+        "My corn has white spots",
+        "When is the best time to harvest",
+        "Tell me about fertilizer"
+      ],
+      "slots": [
+        {
+          "name": "CropType",
+          "slotType": "AMAZON.AlphaNumeric",
+          "valueElicitationPrompt": "What crop are you asking about?"
+        },
+        {
+          "name": "Problem",
+          "slotType": "AMAZON.AlphaNumeric",
+          "valueElicitationPrompt": "What problem are you facing?"
+        }
+      ]
+    },
+    {
+      "name": "HealthQuery",
+      "description": "Handle health and medicine questions",
+      "sampleUtterances": [
+        "I have a fever",
+        "My head hurts",
+        "When should I take my medicine",
+        "Set a medicine reminder",
+        "What medicine should I take"
+      ],
+      "slots": [
+        {
+          "name": "Symptom",
+          "slotType": "AMAZON.AlphaNumeric",
+          "valueElicitationPrompt": "What symptoms do you have?"
+        },
+        {
+          "name": "MedicineName",
+          "slotType": "AMAZON.AlphaNumeric",
+          "valueElicitationPrompt": "What is the medicine name?"
+        }
+      ]
+    },
+    {
+      "name": "SafetyAlert",
+      "description": "Handle fraud detection and safety warnings",
+      "sampleUtterances": [
+        "Someone called asking for money",
+        "I got a message with numbers",
+        "Is this a scam",
+        "Someone wants my bank details",
+        "Read my message"
+      ],
+      "slots": [
+        {
+          "name": "AlertType",
+          "slotType": "AMAZON.AlphaNumeric",
+          "valueElicitationPrompt": "What kind of alert is this?"
+        }
+      ]
+    },
+    {
+      "name": "SetReminder",
+      "description": "Set medicine or task reminders",
+      "sampleUtterances": [
+        "Remind me to take medicine",
+        "Set a reminder",
+        "Wake me up at",
+        "Tell me when to take my pill"
+      ],
+      "slots": [
+        {
+          "name": "ReminderTime",
+          "slotType": "AMAZON.Time",
+          "valueElicitationPrompt": "What time should I remind you?"
+        },
+        {
+          "name": "ReminderTask",
+          "slotType": "AMAZON.AlphaNumeric",
+          "valueElicitationPrompt": "What should I remind you about?"
+        }
+      ]
+    },
+    {
+      "name": "ReadMessage",
+      "description": "Read SMS or messages",
+      "sampleUtterances": [
+        "Read my messages",
+        "Do I have any messages",
+        "What did they say",
+        "Read the last message"
+      ]
+    },
+    {
+      "name": "MakeCall",
+      "description": "Make phone calls",
+      "sampleUtterances": [
+        "Call my son",
+        "Call the doctor",
+        "Make a phone call",
+        "I want to talk to"
+      ],
+      "slots": [
+        {
+          "name": "ContactName",
+          "slotType": "AMAZON.AlphaNumeric",
+          "valueElicitationPrompt": "Who do you want to call?"
+        }
+      ]
+    }
+  ]
+}
