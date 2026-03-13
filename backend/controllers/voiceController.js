@@ -4,6 +4,7 @@
 const bedrockService = require('../services/bedrockService');
 const knowledgeService = require('../services/knowledgeService');
 const s3Service = require('../services/s3Service');
+const voiceAiIntegration = require('../services/voiceAiIntegration');
 
 class VoiceController {
   /**
@@ -14,18 +15,27 @@ class VoiceController {
     try {
       const { audioBuffer, transcribedText, category } = req.body;
 
+      let finalTranscribedText = transcribedText;
+
+      // If audio file is provided but no transcription, use Voice AI service
+      if (!transcribedText && req.file) {
+        console.log('[Voice] Transcribing audio using Voice AI service');
+        const voiceAiResult = await voiceAiIntegration.processAudio(req.file.path);
+        finalTranscribedText = voiceAiResult.transcription;
+      }
+
       // Validate input
-      if (!transcribedText) {
+      if (!finalTranscribedText) {
         return res.status(400).json({
           success: false,
-          error: 'Transcribed text is required'
+          error: 'Transcribed text or audio file is required'
         });
       }
 
       // Step 1: Retrieve relevant knowledge from knowledge base
-      console.log(`[Voice] Retrieving knowledge for query: ${transcribedText}`);
+      console.log(`[Voice] Retrieving knowledge for query: ${finalTranscribedText}`);
       const knowledgeResult = await knowledgeService.retrieveKnowledge(
-        transcribedText,
+        finalTranscribedText,
         category,
         5 // max results
       );
@@ -33,14 +43,14 @@ class VoiceController {
       // Step 2: Generate AI response with knowledge context
       console.log('[Voice] Generating AI response with knowledge context');
       const aiResponse = await bedrockService.processVoiceQuery(
-        transcribedText,
+        finalTranscribedText,
         knowledgeResult.documents || []
       );
 
       // Step 3: Return combined response
       res.json({
         success: true,
-        query: transcribedText,
+        query: finalTranscribedText,
         aiResponse: aiResponse.aiResponse,
         knowledge: {
           hasContext: aiResponse.hasKnowledgeContext,
@@ -115,13 +125,16 @@ class VoiceController {
    */
   async getStatus(req, res) {
     try {
+      const voiceAiStatus = voiceAiIntegration.getStatus();
+      
       res.json({
         success: true,
         status: 'operational',
         services: {
           bedrock: 'connected',
           knowledge: 'ready',
-          s3: 'ready'
+          s3: 'ready',
+          voiceAi: voiceAiStatus.available ? 'available' : 'unavailable'
         },
         timestamp: new Date().toISOString()
       });
