@@ -1,0 +1,24 @@
+# AWS Amplify Build Configuration for VoiceAid Backend
+version: 1
+backend:
+  phases:
+    build:
+      commands:
+        - npm ci
+        - echo "Backend build completed"
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - cd backend
+        - npm ci
+    build:
+      commands:
+        - npm run start
+  artifacts:
+    baseDirectory: backend
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - node_modules/**/*
