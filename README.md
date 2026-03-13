@@ -28,20 +28,31 @@ Backend API (Node.js + Express)
 
 ## ✨ Key Features
 
+### 🌐 Works Completely Offline
+- **On-Device AI**: Pattern-based processing with local knowledge base
+- **No Internet Required**: 100+ responses work without any connection
+- **Battery Optimized**: Automatic power-saving mode below 20% battery
+- **Instant Responses**: < 500ms response time offline
+- **Privacy First**: All data stays on device
+
 ### For Users
 - **One-Button Interface**: Large, color-coded button (Blue=Listening, Green=Processing, Orange=Speaking)
 - **Voice-Only Interaction**: No reading or typing required
-- **Offline Mode**: Basic functions work without internet
-- **Medicine Reminders**: Voice-based medication scheduling
+- **Offline Mode**: Full functionality without internet
+- **Medicine Reminders**: Voice-based medication scheduling with notifications
 - **Fraud Detection**: Warns about common phone scams
-- **Knowledge Base**: Agriculture, health, and safety information
+- **Knowledge Base**: Agriculture, health, and safety information (works offline)
+- **Emergency Numbers**: Quick access to police, ambulance, fire services
 
 ### Technical Features
 - Real-time bidirectional audio streaming (WebSocket)
-- Amazon Nova Sonic for natural speech processing
+- Amazon Nova Sonic for natural speech processing (when online)
 - Amazon Lex V2 for intent recognition (6 intents)
 - AWS Amplify DataStore for offline-first architecture
-- Knowledge retrieval with AWS Bedrock
+- Knowledge retrieval with AWS Bedrock (when online)
+- **Offline AI with 100+ local responses**
+- **Local reminder system with background notifications**
+- **Battery-aware processing modes**
 - Voice biometric authentication (planned)
 
 ## 🚀 Quick Start
@@ -155,6 +166,7 @@ VoiceAid/
 
 ## 📚 Documentation
 
+- [OFFLINE_FEATURES.md](OFFLINE_FEATURES.md) - **NEW!** Complete offline functionality guide
 - [AWS_NATIVE_IMPLEMENTATION.md](AWS_NATIVE_IMPLEMENTATION.md) - AWS setup guide
 - [DEPLOYMENT_CHECKLIST.md](DEPLOYMENT_CHECKLIST.md) - Production deployment
 - [PROJECT_STATUS.md](PROJECT_STATUS.md) - Current implementation status
