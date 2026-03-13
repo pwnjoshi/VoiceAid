@@ -1,195 +1,107 @@
-# VoiceAid
+# VoiceAid - Voice Assistant for Elderly Users
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A React Native mobile app built with Expo that allows elderly and non-literate users to interact with an AI assistant using voice.
 
-## Orality-First AI for the Non-Literate & Elderly
+## Features
 
-### Project Focus
-**Bridging the Cognitive Gap through a Unified Speech-to-Speech AI Interface**
+- **Voice Recording**: Record user's voice with a simple tap
+- **AI Integration**: Send audio to backend API and receive AI responses
+- **Audio Playback**: Play AI-generated responses
+- **Simple UI**: Large circular button with color-coded states
+- **Caretaker Setup**: Configure caretaker contact information
+- **Settings**: Basic app settings
 
-VoiceAid is designed for people who struggle with traditional smartphone interfaces—particularly elderly users and non-literate populations. Instead of relying on text, menus, or complex icons, VoiceAid enables users to interact with technology entirely through natural voice conversations.
+## Button States
 
-The system uses real-time speech-to-speech AI, enabling natural turn-taking conversations that feel human and intuitive.
+- **Gray (Idle)**: Ready to record
+- **Blue (Listening)**: Recording user's voice
+- **Green (Processing)**: Sending audio to backend API
+- **Orange (Speaking)**: Playing AI response
 
-### 1. The Strategic Problem: Why Current Assistants Fail
-Many assume companies like Google or Amazon could easily support underserved populations by simply adding more languages. However, the challenge is structural, not linguistic.
+## Project Structure
 
-#### Literacy Bias
-Modern assistants are built with a **literacy-first** interface model.
-They assume users understand:
-* Text confirmations
-* Menu navigation
-* Multiple choices
-* Icon-based interactions
-
-For users with low digital literacy, this becomes cognitively overwhelming.
-
-#### The Clean Data Problem
-Large AI models are trained primarily on **structured and “clean” speech datasets**.
-However, elderly and non-literate speech patterns often include:
-* Hesitations
-* Repetitions
-* Informal grammar
-* Dialect variations
-
-These patterns often cause existing assistants to misinterpret commands.
-
-#### The Latency Problem
-Most voice assistants follow a cascaded AI architecture:
-`Listen → Transcribe → LLM → Generate Speech`
-
-This introduces 2–3 seconds of delay, which disrupts conversational flow and makes interactions feel unnatural.
-
-### VoiceAid’s Advantage
-VoiceAid uses a **Unified Speech-to-Speech** architecture powered by **Amazon Nova Sonic**, allowing:
-* Real-time voice conversations
-* Natural turn-taking
-* Understanding of hesitations and tone
-* Human-like response timing
-
-Instead of building for literacy, VoiceAid builds for **orality**—how people actually speak.
-
-### 2. Development Milestones
-
-#### Milestone 1: Voice Interaction Engine
-The core of VoiceAid is a real-time conversational voice system.
-Using **Amazon Nova Sonic through Amazon Bedrock**, the system processes speech directly into speech responses through bidirectional streaming.
-
-**Key capabilities:**
-* Real-time speech understanding
-* Recognition of pauses and hesitation
-* Natural conversational flow
-* Reduced latency compared to cascaded systems
-
-This enables VoiceAid to function more like a human conversation partner than a traditional assistant.
-
-#### Milestone 2: Local Knowledge Intelligence (RAG System)
-VoiceAid integrates a localized knowledge system using **Amazon Bedrock Knowledge Bases**.
-This allows the assistant to provide trusted, region-specific guidance, including:
-* Agricultural advice for local crops
-* Health reminders explained through simple metaphors
-* Scam awareness and safety guidance
-* Local government services and information
-
-The system retrieves grounded information to ensure reliable and non-hallucinatory responses.
-
-#### Milestone 3: Orality-First Interaction Logic
-To reduce cognitive load, VoiceAid follows an **Orality-First conversation design**.
-Instead of presenting multiple choices, the assistant always provides **one simple action at a time**.
-
-**Example:**
-* *Traditional Assistant:* "Do you want to check weather, call John, or set an alarm?"
-* *VoiceAid Approach:* "You have a new message from your son. Would you like to hear it? Please say Yes or No."
-
-This structure significantly improves usability for users with low digital literacy or high cognitive load.
-Intent recognition and dialogue management are handled using **Amazon Lex V2**.
-
-#### Milestone 4: One-Button Mobile Interface
-The VoiceAid mobile application will be developed using **React Native with Expo**.
-The interface is intentionally minimal to avoid confusion.
-
-**Interface Design**
-The screen consists of a single large interactive button.
-Color-based states guide the user:
-* 🔵 **Blue** → The assistant is listening
-* 🟢 **Green** → The system is processing
-* 🟠 **Orange** → The assistant is speaking
-
-This design eliminates complex UI elements and ensures accessibility for elderly users.
-
-#### Milestone 5: Offline Capability for Rural Connectivity
-Many users in rural regions face unstable internet connectivity.
-VoiceAid integrates **AWS Amplify DataStore** to support offline functionality.
-
-Local features such as:
-* Time queries
-* Flashlight control
-* Reminder notifications
-
-can operate directly on the device.
-More complex queries are queued locally and automatically synced when connectivity becomes available.
-
-#### Milestone 6: Voice-Based Identity & Security
-For elderly users, passwords and authentication steps can be difficult.
-VoiceAid uses **Amazon Rekognition Voice Biometrics** to verify the user through their voice.
-
-**Key security features:**
-* Voiceprint recognition
-* Silent lock when unknown users attempt access
-* Automatic alert to a designated caretaker via SMS
-
-This acts as a digital safety layer for vulnerable users.
-
-### 3. Technology Stack
-
-**Mobile Application**
-* **React Native (Expo)** — Cross-platform mobile development
-* **AWS Amplify** — Backend integration and offline synchronization
-
-**AI & Voice Processing**
-* **Amazon Nova Sonic** — Real-time speech-to-speech AI
-* **Amazon Bedrock** — Foundation model platform
-
-**Knowledge Retrieval**
-* **Amazon Bedrock Knowledge Bases** — Retrieval-Augmented Generation (RAG)
-
-**Conversational Logic**
-* **Amazon Lex V2** — Intent recognition and dialogue flow
-
-**Security & Identity**
-* **Amazon Rekognition (Voice Biometrics)** — User authentication
-
-### 4. Impact: Digital Dignity
-VoiceAid addresses a massive global gap.
-Over **700 million people** worldwide struggle with literacy or digital interfaces.
-While major tech companies focus on general-purpose assistants, VoiceAid focuses on a specific underserved demographic.
-
-The goal is not just accessibility.
-The goal is **digital dignity**—ensuring that everyone, regardless of literacy level or age, can interact with modern technology confidently.
-
-## Get started
-
-1. Install dependencies
-
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```
+/src
+  /components
+    VoiceButton.js          # Main voice interaction button
+  /screens
+    HomeScreen.js           # Main screen with voice button
+    SettingsScreen.js       # Settings placeholder
+    CaretakerScreen.js      # Caretaker phone number setup
+  /services
+    AudioService.js         # Audio recording and playback
+    ApiService.js           # Backend API communication
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## Installation
 
-## Learn more
+1. Install dependencies:
+```bash
+npm install
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+2. Start the development server:
+```bash
+npm start
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+3. Run on your device:
+   - Press `a` for Android
+   - Press `i` for iOS
+   - Scan QR code with Expo Go app
 
-## Join the community
+## Backend API Configuration
 
-Join our community of developers creating universal apps.
+Update the API URL in `src/services/ApiService.js`:
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+```javascript
+const API_BASE_URL = 'https://your-backend-api.com';
+```
+
+### API Endpoint
+
+**POST /voice**
+- **Request**: FormData with audio file
+- **Response**: Audio file (AI response)
+
+## Required Permissions
+
+- **Microphone**: For recording user's voice
+- **Audio Playback**: For playing AI responses
+
+## Tech Stack
+
+- React Native
+- Expo
+- expo-av (audio recording/playback)
+- expo-router (navigation)
+- @react-native-async-storage/async-storage (local storage)
+
+## Usage
+
+1. **Home Screen**: Tap the large circular button to start recording
+2. **Recording**: Speak your message, then tap again to stop
+3. **Processing**: Wait while the audio is sent to the backend
+4. **Response**: Listen to the AI's response
+5. **Settings**: Access app settings from the bottom tab
+6. **Caretaker**: Set up caretaker contact via the modal screen
+
+## Development Notes
+
+- The app is designed for mobile only (iOS and Android)
+- Backend API must be implemented separately
+- Audio format: M4A (high quality)
+- All UI text should be large and readable for elderly users
+- Button animations provide visual feedback
+
+## Future Enhancements
+
+- Offline mode with cached responses
+- Multiple language support
+- Emergency contact quick dial
+- Voice command shortcuts
+- Audio history playback
+
+## License
+
+Private - VoiceAid Project
