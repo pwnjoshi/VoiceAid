@@ -1,4 +1,0 @@
-SpeechRecognition==3.10.1
-pyttsx3==2.90
-requests==2.31.0
-# PyAudio is optional - if not installed, the script will use text input as fallback
