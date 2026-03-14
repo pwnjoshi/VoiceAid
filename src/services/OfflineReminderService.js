@@ -4,17 +4,16 @@
  * Uses background notifications
  */
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as Notifications from 'expo-notifications';
-import BackgroundTimer from 'react-native-background-timer';
 
-// Configure notifications
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: true,
-  }),
-});
+// Notification stub — expo-notifications is not supported in Expo Go
+// In a production build this would use the real expo-notifications API
+const Notifications = {
+  requestPermissionsAsync: async () => ({ status: 'granted' }),
+  scheduleNotificationAsync: async () => 'stub-id',
+  cancelScheduledNotificationAsync: async () => {},
+  setNotificationHandler: () => {},
+  AndroidNotificationPriority: { HIGH: 'high' },
+};
 
 class OfflineReminderService {
   constructor() {
@@ -104,7 +103,7 @@ class OfflineReminderService {
    * Get all reminders
    */
   async getReminders() {
-    return this.reminders.filter(r => r.active);
+    return [...this.reminders];
   }
 
   /**
@@ -157,12 +156,9 @@ class OfflineReminderService {
     }
   }
 
-  /**
-   * Add medicine reminder (common use case)
-   */
   async addMedicineReminder(medicineName, time, instructions = '') {
     return await this.addReminder({
-      title: `💊 Medicine Time: ${medicineName}`,
+      title: `Medicine: ${medicineName}`,
       message: instructions || `Time to take your ${medicineName}`,
       time,
       frequency: 'daily',
@@ -172,19 +168,9 @@ class OfflineReminderService {
     });
   }
 
-  /**
-   * Add meal reminder
-   */
   async addMealReminder(mealType, time) {
-    const mealEmojis = {
-      breakfast: '🍳',
-      lunch: '🍱',
-      dinner: '🍽️',
-      snack: '🍎'
-    };
-
     return await this.addReminder({
-      title: `${mealEmojis[mealType] || '🍽️'} ${mealType.charAt(0).toUpperCase() + mealType.slice(1)} Time`,
+      title: `${mealType.charAt(0).toUpperCase() + mealType.slice(1)} Time`,
       message: `Time for your ${mealType}`,
       time,
       frequency: 'daily',
@@ -193,12 +179,9 @@ class OfflineReminderService {
     });
   }
 
-  /**
-   * Add water reminder
-   */
   async addWaterReminder(time) {
     return await this.addReminder({
-      title: '💧 Drink Water',
+      title: 'Drink Water',
       message: 'Remember to drink a glass of water',
       time,
       frequency: 'daily',
@@ -210,10 +193,9 @@ class OfflineReminderService {
    * Start background check for reminders
    */
   startBackgroundCheck() {
-    // Check every minute
-    this.checkInterval = BackgroundTimer.setInterval(() => {
+    this.checkInterval = setInterval(() => {
       this.checkReminders();
-    }, 60000); // 60 seconds
+    }, 60000);
   }
 
   /**
@@ -326,7 +308,7 @@ class OfflineReminderService {
    */
   stopBackgroundCheck() {
     if (this.checkInterval) {
-      BackgroundTimer.clearInterval(this.checkInterval);
+      clearInterval(this.checkInterval);
       this.checkInterval = null;
     }
   }

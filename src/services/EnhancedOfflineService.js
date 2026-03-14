@@ -8,8 +8,13 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 class EnhancedOfflineService {
   constructor() {
-    this.knowledge = offlineKnowledge;
-    this.searchIndex = this.buildSearchIndex();
+    this.knowledge = offlineKnowledge || {};
+    try {
+      this.searchIndex = this.buildSearchIndex();
+    } catch (e) {
+      console.warn('EnhancedOfflineService: index build failed', e);
+      this.searchIndex = {};
+    }
   }
 
   /**
@@ -29,8 +34,11 @@ class EnhancedOfflineService {
     };
 
     // Index agriculture
-    Object.entries(this.knowledge.agriculture.crops).forEach(([crop, data]) => {
+    const crops = this.knowledge.agriculture?.crops || {};
+    Object.entries(crops).forEach(([crop, data]) => {
+      if (!data || typeof data !== 'object') return;
       Object.entries(data).forEach(([topic, content]) => {
+        if (typeof content !== 'string') return;
         indexContent(
           `agriculture.crops.${crop}.${topic}`,
           content,
@@ -40,8 +48,11 @@ class EnhancedOfflineService {
     });
 
     // Index health
-    Object.entries(this.knowledge.health.common_ailments).forEach(([ailment, data]) => {
+    const ailments = this.knowledge.health?.common_ailments || {};
+    Object.entries(ailments).forEach(([ailment, data]) => {
+      if (!data || typeof data !== 'object') return;
       Object.entries(data).forEach(([key, content]) => {
+        if (typeof content !== 'string') return;
         indexContent(
           `health.common_ailments.${ailment}.${key}`,
           content,
@@ -51,7 +62,9 @@ class EnhancedOfflineService {
     });
 
     // Index safety
-    Object.entries(this.knowledge.safety.fraud_awareness).forEach(([type, content]) => {
+    const fraud = this.knowledge.safety?.fraud_awareness || {};
+    Object.entries(fraud).forEach(([type, content]) => {
+      if (typeof content !== 'string') return;
       indexContent(
         `safety.fraud_awareness.${type}`,
         content,

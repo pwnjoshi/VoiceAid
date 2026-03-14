@@ -1,7 +1,6 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import '../frontend/src/config/i18n'; // Initialize i18n
 
 export default function TabLayout() {
   return (

@@ -45,7 +45,9 @@
         {
           "microphonePermission": "Allow VoiceAid to access your microphone to record voice messages."
         }
-      ]
+      ],
+      "expo-localization",
+      "expo-audio"
     ],
     "experiments": {
       "typedRoutes": true

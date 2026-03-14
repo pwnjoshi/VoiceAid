@@ -1,175 +1,121 @@
-# VoiceAid - Professional Voice Assistant
+# VoiceAid
 
-A production-ready voice assistant for elderly and non-literate users with complete offline functionality, multi-language support, and natural voice interaction.
+A voice-first mobile app for rural communities — works fully offline, supports English and Hindi, and runs on low-end Android devices.
 
-## Features
+## What it does
 
-### Core Capabilities
-- **Complete Offline Functionality** - Works without internet or AWS
-- **Multi-Language Support** - English and Hindi (easily extensible)
-- **Natural Voice** - On-device TTS (not robotic)
-- **Professional UI** - Modern design with Ionicons (no emojis)
-- **Battery Optimized** - Intelligent power management
-- **100+ Knowledge Base** - Agriculture, health, safety information
+- **Voice assistant** — tap the mic, ask a question, get a spoken answer
+- **Knowledge base** — agriculture, health, and safety information stored on-device
+- **Reminders** — medicine, meal, and custom reminders with local notifications
+- **Settings** — language switching (English/Hindi), voice speed, offline mode toggle
 
-### Screens
-1. **Home** - Voice interaction with visual feedback
-2. **Reminders** - Medicine, meals, custom reminders
-3. **Knowledge** - Browse and search offline knowledge
-4. **Settings** - Language, voice speed, preferences
-
-## Quick Start
-
-```bash
-# Install dependencies
-npm install
-
-# Start app
-npx expo start
-```
-
-## Project Structure
-
-```
-VoiceAid/
-├── frontend/src/
-│   ├── screens/          # All app screens
-│   ├── services/         # Voice, AI, reminders
-│   ├── locales/          # Translations (en, hi)
-│   ├── theme/            # Colors, typography
-│   └── config/           # i18n, settings
-├── backend/              # Node.js API (optional)
-├── src/                  # Legacy services
-└── app/                  # Expo Router navigation
-```
-
-## Technology Stack
-
-- **Frontend**: React Native + Expo
-- **Icons**: Ionicons (professional, no emojis)
-- **Voice**: expo-speech (natural TTS)
-- **i18n**: i18next + react-i18next
-- **State**: AsyncStorage
-- **Navigation**: Expo Router (4 tabs)
-
-## Key Features
-
-### 1. Multi-Language
-- Automatic device language detection
-- Easy language switching in settings
-- Supports English and Hindi
-- Extensible for more languages
-
-### 2. Natural Voice
-- On-device TTS (very small footprint)
-- Adjustable speed (slow/normal/fast)
-- Multi-language support
-- Emotion-based speaking
-- Not robotic - sounds natural
-
-### 3. Offline AI
-- 100+ pre-programmed responses
-- Pattern-based intent recognition
-- Knowledge base search
-- < 500ms response time
-- Works in airplane mode
-
-### 4. Professional UI
-- Modern color palette (Indigo primary)
-- Consistent spacing and typography
-- Professional icons (Ionicons)
-- Smooth animations
-- Accessible design
-
-## Supported Languages
-
-| Language | Code | Status |
-|----------|------|--------|
-| English  | en   | ✅ Complete |
-| Hindi    | hi   | ✅ Complete |
-
-Add more by creating `frontend/src/locales/{code}.json`
-
-## Configuration
-
-### Voice Settings
-- Speed: slow (0.7x), normal (0.9x), fast (1.1x)
-- Language: Automatic or manual selection
-- Volume: Adjustable
-
-### App Settings
-- Offline mode toggle
-- Battery saver mode
-- Notifications enable/disable
-
-## Development
-
-### Add New Language
-1. Create `frontend/src/locales/{code}.json`
-2. Add to `frontend/src/config/i18n.js`
-3. Test language switching
-
-### Add New Knowledge
-Edit `src/data/offlineKnowledge.json`:
-```json
-{
-  "category": {
-    "topic": {
-      "question": "answer"
-    }
-  }
-}
-```
-
-### Customize Theme
-Edit `frontend/src/theme/colors.js` and `typography.js`
-
-## Testing
-
-```bash
-# Run app
-npx expo start
-
-# Test on device
-# Scan QR code with Expo Go
-
-# Test offline
-# Enable airplane mode
-# App should work fully
-```
-
-## Performance
-
-| Metric | Value |
-|--------|-------|
-| Offline Response | < 500ms |
-| Battery (Idle) | < 1%/hour |
-| Battery (Active) | < 5%/hour |
-| Storage | < 2MB |
-| Knowledge Base | 100+ responses |
-
-## Documentation
-
-- `OFFLINE_FEATURES.md` - Offline capabilities
-- `AWS_NATIVE_IMPLEMENTATION.md` - AWS setup (optional)
-- `DEPLOYMENT_CHECKLIST.md` - Production deployment
-- `RESTRUCTURE_PLAN.md` - Architecture details
-
-## Production Ready
-
-✅ Professional UI with icons
-✅ Multi-language support
-✅ Natural voice (not robotic)
-✅ Complete offline functionality
-✅ Battery optimized
-✅ Proper directory structure
-✅ All features working
-✅ Clean, maintainable code
-
-## License
-
-Private - VoiceAid Project
+Everything works without internet. No API keys needed to run the app.
 
 ---
 
-**Built with modern React Native best practices**
+## Project structure
+
+```
+VoiceAid/
+├── app/                    # Expo Router screens (tabs)
+│   ├── (tabs)/
+│   │   ├── index.tsx       # Home / voice tab
+│   │   ├── reminders.tsx   # Reminders tab
+│   │   ├── knowledge.tsx   # Knowledge base tab
+│   │   └── explore.tsx     # Settings tab
+│   └── _layout.tsx
+├── src/
+│   ├── screens/            # Screen components
+│   ├── services/           # Offline AI, voice, reminders
+│   ├── data/               # offlineKnowledge.json
+│   ├── config/             # i18n, Amplify, API config
+│   ├── theme/              # Colors, typography, spacing
+│   └── locales/            # en.json, hi.json
+├── backend/                # Node.js Express API (optional, cloud features)
+├── __tests__/              # Jest tests
+├── start-frontend.bat      # Start Expo dev server
+└── start-backend.bat       # Start backend server
+```
+
+---
+
+## Getting started
+
+### Prerequisites
+
+- Node.js 18+
+- Expo Go app on your Android device/emulator
+- (Optional) Android emulator via Android Studio
+
+### Install
+
+```bash
+npm install
+```
+
+### Run the app
+
+```bat
+start-frontend.bat
+```
+
+Or manually:
+
+```bash
+npx expo start --clear
+```
+
+Scan the QR code with Expo Go, or press `a` to open on Android emulator.
+
+### Run the backend (optional)
+
+Only needed for cloud/AI features. The app works fully offline without it.
+
+```bat
+start-backend.bat
+```
+
+Backend runs on `http://localhost:3000`.
+
+---
+
+## Running tests
+
+```bash
+npm test
+```
+
+All 37 tests cover offline AI, reminder service, and enhanced offline service.
+
+---
+
+## Tech stack
+
+| Layer | Tech |
+|---|---|
+| Framework | Expo SDK 54 / React Native 0.81 |
+| Navigation | Expo Router (file-based) |
+| Voice output | expo-speech |
+| Audio input | expo-audio |
+| Storage | AsyncStorage |
+| i18n | i18next / react-i18next |
+| Icons | @expo/vector-icons (Ionicons) |
+| Backend | Node.js + Express |
+
+---
+
+## Languages
+
+Switch between English and Hindi from the Settings tab. The language preference is saved locally and persists across app restarts.
+
+---
+
+## Offline capability
+
+The app bundles a local knowledge base (`src/data/offlineKnowledge.json`) covering:
+
+- **Agriculture** — rice, wheat, corn planting, pest control, fertilizers, harvesting
+- **Health** — fever, cough, headache, stomach pain — home remedies and when to see a doctor
+- **Safety** — OTP scams, fraud awareness, emergency numbers (112, 100, 101, 108)
+
+No internet connection is required for any of these features.

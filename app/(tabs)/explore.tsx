@@ -1,5 +1,5 @@
 import React from 'react';
-import SettingsScreen from '../../frontend/src/screens/SettingsScreen';
+import SettingsScreen from '../../src/screens/SettingsScreen';
 
 export default function SettingsTab() {
   return <SettingsScreen />;

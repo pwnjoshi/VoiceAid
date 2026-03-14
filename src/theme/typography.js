@@ -39,47 +39,47 @@ export const typography = {
     relaxed: 1.75,
   },
   
-  // Text styles
+  // Text styles — lineHeight must be px in React Native
   styles: {
     h1: {
       fontSize: 36,
       fontWeight: '700',
-      lineHeight: 1.25,
+      lineHeight: 45,
     },
     h2: {
       fontSize: 30,
       fontWeight: '700',
-      lineHeight: 1.25,
+      lineHeight: 38,
     },
     h3: {
       fontSize: 24,
       fontWeight: '600',
-      lineHeight: 1.25,
+      lineHeight: 30,
     },
     h4: {
       fontSize: 20,
       fontWeight: '600',
-      lineHeight: 1.5,
+      lineHeight: 30,
     },
     body1: {
       fontSize: 16,
       fontWeight: '400',
-      lineHeight: 1.5,
+      lineHeight: 24,
     },
     body2: {
       fontSize: 14,
       fontWeight: '400',
-      lineHeight: 1.5,
+      lineHeight: 21,
     },
     button: {
       fontSize: 16,
       fontWeight: '600',
-      lineHeight: 1.5,
+      lineHeight: 24,
     },
     caption: {
       fontSize: 12,
       fontWeight: '400',
-      lineHeight: 1.5,
+      lineHeight: 18,
     },
   },
 };

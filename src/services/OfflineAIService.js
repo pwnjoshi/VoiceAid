@@ -3,27 +3,21 @@
  * On-device processing with no internet required
  * Battery-optimized with TensorFlow Lite
  */
-import { NativeModules, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import NetInfo from '@react-native-community/netinfo';
 
 class OfflineAIService {
   constructor() {
-    this.isOnline = true;
+    this.isOnline = false; // default offline-first
     this.batteryLevel = 100;
     this.offlineResponses = this.loadOfflineResponses();
     this.conversationHistory = [];
-    this.setupNetworkListener();
   }
 
   /**
-   * Setup network connectivity listener
+   * Update network status (called externally from app layer)
    */
-  setupNetworkListener() {
-    NetInfo.addEventListener(state => {
-      this.isOnline = state.isConnected;
-      console.log('[Offline AI] Network status:', this.isOnline ? 'Online' : 'Offline');
-    });
+  setNetworkStatus(isConnected) {
+    this.isOnline = isConnected;
   }
 
   /**
