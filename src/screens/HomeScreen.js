@@ -70,10 +70,13 @@ export default function HomeScreen() {
   const [sttReady,    setSttReady]  = useState(!!ExpoSpeechRecognitionModule);
   const [inputFocused, setInputFocused] = useState(false);
 
-  const stateRef     = useRef(S.IDLE);
-  const finalTextRef = useRef('');
-  const autoStarted  = useRef(false);
-  const inputRef     = useRef(null);
+  const stateRef        = useRef(S.IDLE);
+  const finalTextRef    = useRef('');
+  const partialRef      = useRef('');
+  const autoStarted     = useRef(false);
+  const inputRef        = useRef(null);
+  const silenceTimer    = useRef(null);
+  const userStoppedRef  = useRef(false);
 
   // Animations
   const pulseAnim  = useRef(new Animated.Value(1)).current;
@@ -88,18 +91,25 @@ export default function HomeScreen() {
   // ── STT events ──────────────────────────────────────────────────────────────
   useSpeechRecognitionEvent('start', () => {
     setState(S.LISTENING);
+    // Safety timeout — if no speech in 8 seconds, stop automatically
+    clearTimeout(silenceTimer.current);
+    silenceTimer.current = setTimeout(() => {
+      if (stateRef.current === S.LISTENING) {
+        ExpoSpeechRecognitionModule?.stop();
+        setState(S.IDLE);
+      }
+    }, 8000);
   });
 
   useSpeechRecognitionEvent('end', () => {
+    clearTimeout(silenceTimer.current);
     if (stateRef.current === S.LISTENING) {
       const text = finalTextRef.current;
-      if (text) processText(text);
-      else {
+      if (text) {
+        processText(text);
+      } else {
+        // No speech heard — just go idle, don't auto-restart
         setState(S.IDLE);
-        // Auto-restart after silence
-        setTimeout(() => {
-          if (stateRef.current === S.IDLE) startListening();
-        }, 800);
       }
     }
   });
@@ -107,16 +117,27 @@ export default function HomeScreen() {
   useSpeechRecognitionEvent('result', (event) => {
     const text = event.results?.[0]?.transcript || '';
     if (event.isFinal) {
+      clearTimeout(silenceTimer.current);
       finalTextRef.current = text;
+      partialRef.current = '';
       setTranscript(text);
       setPartial('');
       if (stateRef.current === S.LISTENING) processText(text);
     } else {
       setPartial(text);
+      partialRef.current = text;
+      // Reset silence timer on each partial result (user is still speaking)
+      clearTimeout(silenceTimer.current);
+      silenceTimer.current = setTimeout(() => {
+        if (stateRef.current === S.LISTENING) {
+          ExpoSpeechRecognitionModule?.stop();
+        }
+      }, 3000); // 3s of silence after last partial = done speaking
     }
   });
 
   useSpeechRecognitionEvent('error', (event) => {
+    clearTimeout(silenceTimer.current);
     const code = event.error || '';
     if (code === 'not-allowed' || code === 'service-not-allowed') {
       setSttReady(false);
@@ -124,10 +145,6 @@ export default function HomeScreen() {
     setPartial('');
     if (stateRef.current === S.LISTENING) {
       setState(S.IDLE);
-      // Retry after error
-      setTimeout(() => {
-        if (stateRef.current === S.IDLE && sttReady) startListening();
-      }, 1200);
     }
   });
 
@@ -150,9 +167,11 @@ export default function HomeScreen() {
   useEffect(() => {
     if (!autoStarted.current && sttReady) {
       autoStarted.current = true;
-      // Small delay so the screen renders first
       setTimeout(() => startListening(), 600);
     }
+    return () => {
+      clearTimeout(silenceTimer.current);
+    };
   }, [sttReady]);
 
   // ── Pulse animation ──────────────────────────────────────────────────────────
@@ -238,7 +257,7 @@ export default function HomeScreen() {
   const handleMicPress = async () => {
     haptic('medium');
 
-    // If STT not available → focus text input (mic acts as "activate input")
+    // If STT not available → focus text input
     if (!sttReady) {
       setInputFocused(true);
       setTimeout(() => inputRef.current?.focus(), 100);
@@ -246,14 +265,26 @@ export default function HomeScreen() {
     }
 
     if (state === S.SPEAKING) {
+      // Stop speaking and go idle
       await VoiceService.stop();
       setState(S.IDLE);
-      setTimeout(() => startListening(), 400);
     } else if (state === S.LISTENING) {
-      stopListening();
+      // User manually stops — set IDLE immediately, then call stop()
+      clearTimeout(silenceTimer.current);
+      setState(S.IDLE);           // instant visual feedback
+      userStoppedRef.current = true;
+      try { ExpoSpeechRecognitionModule?.stop(); } catch {}
+      // If there's partial text, process it
+      const text = finalTextRef.current || partialRef.current;
+      if (text) {
+        setTimeout(() => processText(text), 100);
+      }
     } else if (state === S.IDLE) {
+      // Start fresh
       setResponse('');
       setTranscript('');
+      setErrorMsg('');
+      userStoppedRef.current = false;
       startListening();
     }
   };
@@ -297,7 +328,7 @@ export default function HomeScreen() {
 
       await VoiceService.speak(answer, {
         language:  i18n.language,
-        onDone:    () => { setState(S.IDLE); setTimeout(() => startListening(), 800); },
+        onDone:    () => { setState(S.IDLE); },
         onError:   () => { setState(S.IDLE); },
         onStopped: () => { setState(S.IDLE); },
       });
