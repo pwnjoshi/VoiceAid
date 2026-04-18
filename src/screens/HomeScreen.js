@@ -20,6 +20,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import * as Haptics from 'expo-haptics';
 import NetInfo from '@react-native-community/netinfo';
+
+// expo-speech-recognition — loaded at runtime to avoid crash if native module missing
 import {
   ExpoSpeechRecognitionModule,
   useSpeechRecognitionEvent,

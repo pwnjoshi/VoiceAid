@@ -85,6 +85,7 @@ desktop.ini
 .project
 .classpath
 .settings/
+.vscode
 
 # ── Python (leftover from earlier branches) ───────────────────────────────────
 __pycache__/
