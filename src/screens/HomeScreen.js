@@ -21,16 +21,24 @@ import { useTranslation } from 'react-i18next';
 import * as Haptics from 'expo-haptics';
 import NetInfo from '@react-native-community/netinfo';
 
-// expo-speech-recognition — loaded at runtime to avoid crash if native module missing
-import {
-  ExpoSpeechRecognitionModule,
-  useSpeechRecognitionEvent,
-} from 'expo-speech-recognition';
-
 import VoiceService from '../services/VoiceService';
 import EnhancedOfflineService from '../services/EnhancedOfflineService';
 import ApiService from '../services/ApiService';
 import theme from '../theme';
+
+// expo-speech-recognition requires a dev build — not available in Expo Go.
+// We import it safely and fall back to text input if the native module is absent.
+let ExpoSpeechRecognitionModule = null;
+let useSpeechRecognitionEvent = (_event, _cb) => {};  // no-op in Expo Go
+try {
+  const stt = require('expo-speech-recognition');
+  if (stt?.ExpoSpeechRecognitionModule) {
+    ExpoSpeechRecognitionModule = stt.ExpoSpeechRecognitionModule;
+    useSpeechRecognitionEvent = stt.useSpeechRecognitionEvent;
+  }
+} catch {
+  // Native module not available — text input fallback will be used
+}
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 const S = {
@@ -77,7 +85,7 @@ export default function HomeScreen() {
   const [errorMsg,     setErrorMsg]     = useState('');
   const [queryCount,   setQueryCount]   = useState(3);
   const [answerSrc,    setAnswerSrc]    = useState('offline');
-  const [sttAvailable, setSttAvailable] = useState(true);
+  const [sttAvailable, setSttAvailable] = useState(!!ExpoSpeechRecognitionModule);
   const [textInput,    setTextInput]    = useState('');
 
   const stateRef      = useRef(S.IDLE);
@@ -214,6 +222,10 @@ export default function HomeScreen() {
 
   // ── Start STT ───────────────────────────────────────────────────────────────
   const startListening = async () => {
+    if (!ExpoSpeechRecognitionModule) {
+      setSttAvailable(false);
+      return;
+    }
     setErrorMsg('');
     setResponse('');
     setTranscript('');
@@ -252,6 +264,7 @@ export default function HomeScreen() {
 
   // ── Stop STT ────────────────────────────────────────────────────────────────
   const stopListening = () => {
+    if (!ExpoSpeechRecognitionModule) return;
     try {
       ExpoSpeechRecognitionModule.stop();
       // 'end' event will fire and trigger processText
