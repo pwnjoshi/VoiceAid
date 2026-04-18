@@ -1,14 +1,14 @@
 /**
  * HomeScreen — Voice Assistant
  *
+ * Uses expo-speech-recognition for STT — works in Expo Go on Android.
+ * Falls back to text input if permissions denied or STT unavailable.
+ *
  * Flow:
- *  1. Tap mic → start device STT (@react-native-voice/voice)
- *     If native module absent (Expo Go) → show text input fallback
- *  2. Speech recognised → show live transcript
- *  3. Tap again (or silence auto-stops) → process transcript
- *  4. Try AWS Bedrock RAG first (if online + backend reachable)
- *  5. Fall back to on-device knowledge base (always works offline)
- *  6. Speak answer via expo-speech TTS
+ *  1. Tap mic → request mic permission → start STT
+ *  2. Partial results shown live as user speaks
+ *  3. Final result → search knowledge base (AWS Bedrock if online, offline otherwise)
+ *  4. Answer spoken aloud via expo-speech TTS
  */
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
@@ -20,6 +20,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import * as Haptics from 'expo-haptics';
 import NetInfo from '@react-native-community/netinfo';
+import {
+  ExpoSpeechRecognitionModule,
+  useSpeechRecognitionEvent,
+} from 'expo-speech-recognition';
 
 import VoiceService from '../services/VoiceService';
 import EnhancedOfflineService from '../services/EnhancedOfflineService';
@@ -75,9 +79,7 @@ export default function HomeScreen() {
   const [textInput,    setTextInput]    = useState('');
 
   const stateRef      = useRef(S.IDLE);
-  const transcriptRef = useRef('');
-  const partialRef    = useRef('');
-  const VoiceRef      = useRef(null);
+  const finalTextRef  = useRef('');
 
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
@@ -85,64 +87,61 @@ export default function HomeScreen() {
 
   const sttLocale = LOCALE_MAP[i18n.language] || 'en-US';
 
-  // ── Load Voice module (native — absent in Expo Go) ──────────────────────────
-  useEffect(() => {
-    let Voice = null;
-    try {
-      const mod = require('@react-native-voice/voice');
-      Voice = mod.default || mod;
+  // ── expo-speech-recognition event hooks ────────────────────────────────────
+  useSpeechRecognitionEvent('start', () => {
+    setState(S.LISTENING);
+    Animated.spring(scaleAnim, { toValue: 1.08, useNativeDriver: true }).start();
+  });
 
-      // In Expo Go the JS module loads but the native bridge is null
-      const { NativeModules } = require('react-native');
-      if (!NativeModules.RCTVoice && !NativeModules.Voice) {
-        setSttAvailable(false);
-        return;
+  useSpeechRecognitionEvent('end', () => {
+    // Fires when recognition session ends (natural or manual stop)
+    if (stateRef.current === S.LISTENING) {
+      const text = finalTextRef.current;
+      if (text) {
+        processText(text);
+      } else {
+        setErrorMsg('No speech detected. Tap the mic and speak your question.');
+        setState(S.ERROR);
+        haptic('heavy');
       }
-
-      VoiceRef.current = Voice;
-    } catch {
-      setSttAvailable(false);
-      return;
     }
+  });
 
-    Voice.onSpeechStart   = () => {};
-    Voice.onSpeechEnd     = () => {
-      if (stateRef.current === S.LISTENING) processText(transcriptRef.current || partialRef.current);
-    };
-    Voice.onSpeechResults = (e) => {
-      const text = e.value?.[0] || '';
-      transcriptRef.current = text;
+  useSpeechRecognitionEvent('result', (event) => {
+    const text = event.results?.[0]?.transcript || '';
+    if (event.isFinal) {
+      finalTextRef.current = text;
       setTranscript(text);
       setPartial('');
-      if (stateRef.current === S.LISTENING) processText(text);
-    };
-    Voice.onSpeechPartialResults = (e) => {
-      const text = e.value?.[0] || '';
-      partialRef.current = text;
-      setPartial(text);
-    };
-    Voice.onSpeechError = (e) => {
-      const code = String(e.error?.code || '');
-      if (code === '9') {
-        setSttAvailable(false);
-        setErrorMsg('Microphone permission denied. Use text input below.');
-      } else if (code === '7') {
-        setErrorMsg('Could not understand. Please speak clearly and try again.');
-      } else if (code === '5') {
-        setErrorMsg('No speech detected. Tap the mic and speak your question.');
-      } else {
-        setSttAvailable(false);
-        setErrorMsg('Voice recognition unavailable. Use text input below.');
+      // Process immediately on final result
+      if (stateRef.current === S.LISTENING) {
+        processText(text);
       }
-      setPartial('');
+    } else {
+      setPartial(text);
+    }
+  });
+
+  useSpeechRecognitionEvent('error', (event) => {
+    const code = event.error || '';
+    if (code === 'no-speech') {
+      setErrorMsg('No speech detected. Tap the mic and speak your question.');
+    } else if (code === 'not-allowed' || code === 'service-not-allowed') {
+      setSttAvailable(false);
+      setErrorMsg('Microphone permission denied. Use text input below.');
+    } else if (code === 'network') {
+      // STT needs network on some devices — fall back to text
+      setSttAvailable(false);
+      setErrorMsg('Voice recognition needs internet on this device. Use text input below.');
+    } else {
+      setErrorMsg(`Voice error: ${code}. Please try again.`);
+    }
+    setPartial('');
+    if (stateRef.current === S.LISTENING) {
       setState(S.ERROR);
       haptic('heavy');
-    };
-
-    return () => {
-      Voice.destroy().then(Voice.removeAllListeners).catch(() => {});
-    };
-  }, [i18n.language]);
+    }
+  });
 
   // ── Network + backend health ────────────────────────────────────────────────
   useEffect(() => {
@@ -198,7 +197,7 @@ export default function HomeScreen() {
     if (appState === S.IDLE || appState === S.ERROR) {
       await startListening();
     } else if (appState === S.LISTENING) {
-      await stopListening();
+      stopListening();
     }
   };
 
@@ -213,38 +212,49 @@ export default function HomeScreen() {
 
   // ── Start STT ───────────────────────────────────────────────────────────────
   const startListening = async () => {
-    if (!VoiceRef.current) { setSttAvailable(false); return; }
     setErrorMsg('');
     setResponse('');
     setTranscript('');
     setPartial('');
-    transcriptRef.current = '';
-    partialRef.current = '';
+    finalTextRef.current = '';
     haptic('medium');
+
     try {
-      await VoiceRef.current.start(sttLocale);
-      setState(S.LISTENING);
-      Animated.spring(scaleAnim, { toValue: 1.08, useNativeDriver: true }).start();
+      // Request permission first
+      const result = await ExpoSpeechRecognitionModule.requestPermissionsAsync();
+      if (!result.granted) {
+        setSttAvailable(false);
+        setErrorMsg('Microphone permission denied. Use text input below.');
+        setState(S.ERROR);
+        haptic('heavy');
+        return;
+      }
+
+      // Start recognition
+      ExpoSpeechRecognitionModule.start({
+        lang:          sttLocale,
+        interimResults: true,       // show partial results live
+        maxAlternatives: 1,
+        continuous:    false,       // stop after first utterance
+        requiresOnDeviceRecognition: false,
+        addsPunctuation: false,
+      });
+      // State will be set to LISTENING by the 'start' event handler
     } catch (err) {
-      console.error('Voice.start error:', err);
-      setSttAvailable(false);
-      setErrorMsg('Voice recognition unavailable. Use text input below.');
+      console.error('STT start error:', err);
+      setErrorMsg('Could not start voice recognition. Please try again.');
       setState(S.ERROR);
       haptic('heavy');
     }
   };
 
   // ── Stop STT ────────────────────────────────────────────────────────────────
-  const stopListening = async () => {
+  const stopListening = () => {
     try {
-      if (VoiceRef.current) await VoiceRef.current.stop();
-      setTimeout(() => {
-        if (stateRef.current === S.LISTENING) {
-          processText(transcriptRef.current || partialRef.current);
-        }
-      }, 1500);
-    } catch {
-      processText(transcriptRef.current || partialRef.current);
+      ExpoSpeechRecognitionModule.stop();
+      // 'end' event will fire and trigger processText
+    } catch (err) {
+      console.error('STT stop error:', err);
     }
   };
 
@@ -369,10 +379,14 @@ export default function HomeScreen() {
         <View style={styles.buttonArea}>
           <Animated.View style={{ transform: [{ scale: Animated.multiply(scaleAnim, pulseAnim) }] }}>
             <TouchableOpacity
-              style={[styles.voiceBtn, { backgroundColor: btn.color }, (isDisabled || !sttAvailable) && styles.disabled]}
+              style={[
+                styles.voiceBtn,
+                { backgroundColor: btn.color },
+                (isDisabled || (!sttAvailable && appState !== S.SPEAKING)) && styles.disabled,
+              ]}
               onPress={handlePress}
               activeOpacity={0.88}
-              disabled={isDisabled || (!sttAvailable && appState !== S.SPEAKING)}
+              disabled={isDisabled}
             >
               <Ionicons name={btn.icon} size={68} color="#fff" />
             </TouchableOpacity>
