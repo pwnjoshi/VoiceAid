@@ -1,0 +1,74 @@
+{
+  "app": {
+    "name": "व्हॉइसएड",
+    "tagline": "तुमचा आवाज सहाय्यक"
+  },
+  "home": {
+    "title": "व्हॉइसएड",
+    "subtitle": "बोलण्यासाठी टॅप करा",
+    "listening": "ऐकत आहे...",
+    "processing": "प्रक्रिया करत आहे...",
+    "speaking": "बोलत आहे...",
+    "offline": "ऑफलाइन मोड",
+    "online": "ऑनलाइन मोड",
+    "tapToSpeak": "बोलण्यासाठी बटण दाबा",
+    "tapAgain": "संपल्यावर पुन्हा दाबा",
+    "helpText": "शेती, आरोग्य, सुरक्षा किंवा दैनंदिन कामांबद्दल विचारा"
+  },
+  "settings": {
+    "title": "सेटिंग्ज",
+    "language": "भाषा",
+    "selectLanguage": "भाषा निवडा",
+    "voiceSpeed": "आवाजाचा वेग",
+    "slow": "हळू",
+    "normal": "सामान्य",
+    "fast": "जलद",
+    "offlineMode": "ऑफलाइन मोड",
+    "offlineModeDesc": "इंटरनेटशिवाय डिव्हाइस AI वापरा",
+    "batterySaver": "बॅटरी सेव्हर",
+    "batterySaverDesc": "वीज वापर कमी करा",
+    "notifications": "सूचना",
+    "notificationsDesc": "रिमाइंडर सूचना सक्षम करा",
+    "about": "बद्दल",
+    "version": "आवृत्ती",
+    "caretaker": "काळजीवाहक सेटिंग्ज",
+    "caretakerPhone": "काळजीवाहक फोन नंबर",
+    "save": "जतन करा",
+    "cancel": "रद्द करा"
+  },
+  "reminders": {
+    "title": "स्मरणपत्रे",
+    "addReminder": "स्मरणपत्र जोडा",
+    "medicine": "औषध",
+    "meal": "जेवण",
+    "custom": "सानुकूल",
+    "time": "वेळ",
+    "frequency": "वारंवारता",
+    "daily": "दररोज",
+    "weekly": "साप्ताहिक",
+    "once": "एकदा",
+    "active": "सक्रिय",
+    "inactive": "निष्क्रिय",
+    "noReminders": "कोणतेही स्मरणपत्र सेट नाही",
+    "delete": "हटवा",
+    "edit": "संपादित करा"
+  },
+  "knowledge": {
+    "agriculture": "शेती",
+    "health": "आरोग्य",
+    "safety": "सुरक्षा",
+    "general": "सामान्य"
+  },
+  "status": {
+    "online": "ऑनलाइन",
+    "offline": "ऑफलाइन",
+    "battery": "बॅटरी",
+    "lowBattery": "कमी बॅटरी - पॉवर सेव्हिंग मोड सक्रिय"
+  },
+  "errors": {
+    "micPermission": "मायक्रोफोन परवानगी नाकारली",
+    "networkError": "नेटवर्क त्रुटी आली",
+    "processingError": "विनंती प्रक्रिया करण्यात अयशस्वी",
+    "tryAgain": "कृपया पुन्हा प्रयत्न करा"
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "app": {
+    "name": "ভয়েসএইড",
+    "tagline": "আপনার কণ্ঠস্বর সহকারী"
+  },
+  "home": {
+    "title": "ভয়েসএইড",
+    "subtitle": "কথা বলতে ট্যাপ করুন",
+    "listening": "শুনছি...",
+    "processing": "প্রক্রিয়া করছি...",
+    "speaking": "বলছি...",
+    "offline": "অফলাইন মোড",
+    "online": "অনলাইন মোড",
+    "tapToSpeak": "কথা বলতে বোতাম চাপুন",
+    "tapAgain": "শেষ হলে আবার চাপুন",
+    "helpText": "কৃষি, স্বাস্থ্য, নিরাপত্তা সম্পর্কে জিজ্ঞেস করুন"
+  },
+  "settings": {
+    "title": "সেটিংস",
+    "language": "ভাষা",
+    "selectLanguage": "ভাষা নির্বাচন করুন",
+    "voiceSpeed": "কণ্ঠস্বরের গতি",
+    "slow": "ধীর",
+    "normal": "স্বাভাবিক",
+    "fast": "দ্রুত",
+    "offlineMode": "অফলাইন মোড",
+    "offlineModeDesc": "ইন্টারনেট ছাড়া ডিভাইস AI ব্যবহার করুন",
+    "batterySaver": "ব্যাটারি সেভার",
+    "batterySaverDesc": "বিদ্যুৎ খরচ কমান",
+    "notifications": "বিজ্ঞপ্তি",
+    "notificationsDesc": "রিমাইন্ডার বিজ্ঞপ্তি সক্ষম করুন",
+    "about": "সম্পর্কে",
+    "version": "সংস্করণ",
+    "caretaker": "পরিচর্যাকারী সেটিংস",
+    "caretakerPhone": "পরিচর্যাকারীর ফোন নম্বর",
+    "save": "সংরক্ষণ করুন",
+    "cancel": "বাতিল করুন"
+  },
+  "reminders": {
+    "title": "রিমাইন্ডার",
+    "addReminder": "রিমাইন্ডার যোগ করুন",
+    "medicine": "ওষুধ",
+    "meal": "খাবার",
+    "custom": "কাস্টম",
+    "time": "সময়",
+    "frequency": "ফ্রিকোয়েন্সি",
+    "daily": "দৈনিক",
+    "weekly": "সাপ্তাহিক",
+    "once": "একবার",
+    "active": "সক্রিয়",
+    "inactive": "নিষ্ক্রিয়",
+    "noReminders": "কোনো রিমাইন্ডার সেট নেই",
+    "delete": "মুছুন",
+    "edit": "সম্পাদনা করুন"
+  },
+  "knowledge": {
+    "agriculture": "কৃষি",
+    "health": "স্বাস্থ্য",
+    "safety": "নিরাপত্তা",
+    "general": "সাধারণ"
+  },
+  "status": {
+    "online": "অনলাইন",
+    "offline": "অফলাইন",
+    "battery": "ব্যাটারি",
+    "lowBattery": "কম ব্যাটারি - পাওয়ার সেভিং মোড সক্রিয়"
+  },
+  "errors": {
+    "micPermission": "মাইক্রোফোন অনুমতি অস্বীকৃত",
+    "networkError": "নেটওয়ার্ক ত্রুটি হয়েছে",
+    "processingError": "অনুরোধ প্রক্রিয়া করতে ব্যর্থ",
+    "tryAgain": "আবার চেষ্টা করুন"
+  }
+}

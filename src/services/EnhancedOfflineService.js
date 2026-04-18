@@ -33,7 +33,7 @@ class EnhancedOfflineService {
       });
     };
 
-    // Index agriculture
+    // Index agriculture crops
     const crops = this.knowledge.agriculture?.crops || {};
     Object.entries(crops).forEach(([crop, data]) => {
       if (!data || typeof data !== 'object') return;
@@ -42,12 +42,23 @@ class EnhancedOfflineService {
         indexContent(
           `agriculture.crops.${crop}.${topic}`,
           content,
-          [crop, topic, 'farming', 'agriculture', 'crop']
+          [crop, topic, 'farming', 'agriculture', 'crop', 'field']
         );
       });
     });
 
-    // Index health
+    // Index agriculture general
+    const agriGeneral = this.knowledge.agriculture?.general || {};
+    Object.entries(agriGeneral).forEach(([topic, content]) => {
+      if (typeof content !== 'string') return;
+      indexContent(
+        `agriculture.general.${topic}`,
+        content,
+        [topic, 'farming', 'agriculture', 'soil', 'crop']
+      );
+    });
+
+    // Index health ailments
     const ailments = this.knowledge.health?.common_ailments || {};
     Object.entries(ailments).forEach(([ailment, data]) => {
       if (!data || typeof data !== 'object') return;
@@ -56,19 +67,77 @@ class EnhancedOfflineService {
         indexContent(
           `health.common_ailments.${ailment}.${key}`,
           content,
-          [ailment, key, 'health', 'medicine', 'doctor']
+          [ailment, key, 'health', 'medicine', 'doctor', 'treatment', 'symptoms']
         );
       });
     });
 
-    // Index safety
+    // Index health medicines
+    const medicines = this.knowledge.health?.medicines || {};
+    Object.entries(medicines).forEach(([med, data]) => {
+      if (!data || typeof data !== 'object') return;
+      Object.entries(data).forEach(([key, content]) => {
+        if (typeof content !== 'string') return;
+        indexContent(
+          `health.medicines.${med}.${key}`,
+          content,
+          [med, key, 'medicine', 'tablet', 'dosage', 'drug']
+        );
+      });
+    });
+
+    // Index first aid
+    const firstAid = this.knowledge.health?.first_aid || {};
+    Object.entries(firstAid).forEach(([topic, content]) => {
+      if (typeof content !== 'string') return;
+      indexContent(
+        `health.first_aid.${topic}`,
+        content,
+        [topic, 'first aid', 'emergency', 'injury', 'accident']
+      );
+    });
+
+    // Index safety fraud
     const fraud = this.knowledge.safety?.fraud_awareness || {};
     Object.entries(fraud).forEach(([type, content]) => {
       if (typeof content !== 'string') return;
       indexContent(
         `safety.fraud_awareness.${type}`,
         content,
-        [type, 'fraud', 'scam', 'safety', 'security']
+        [type, 'fraud', 'scam', 'safety', 'security', 'otp', 'bank', 'money', 'upi']
+      );
+    });
+
+    // Index emergency numbers
+    const emergency = this.knowledge.safety?.emergency_numbers || {};
+    Object.entries(emergency).forEach(([service, content]) => {
+      if (typeof content !== 'string') return;
+      indexContent(
+        `safety.emergency_numbers.${service}`,
+        content,
+        [service, 'emergency', 'number', 'call', 'helpline', 'police', 'ambulance']
+      );
+    });
+
+    // Index home safety
+    const homeSafety = this.knowledge.safety?.home_safety || {};
+    Object.entries(homeSafety).forEach(([topic, content]) => {
+      if (typeof content !== 'string') return;
+      indexContent(
+        `safety.home_safety.${topic}`,
+        content,
+        [topic, 'home', 'safety', 'fire', 'gas', 'electric']
+      );
+    });
+
+    // Index government schemes
+    const schemes = this.knowledge.daily_living?.government_schemes || {};
+    Object.entries(schemes).forEach(([scheme, content]) => {
+      if (typeof content !== 'string') return;
+      indexContent(
+        `daily_living.government_schemes.${scheme}`,
+        content,
+        [scheme, 'government', 'scheme', 'benefit', 'subsidy', 'pm', 'kisan']
       );
     });
 
@@ -138,19 +207,18 @@ class EnhancedOfflineService {
    */
   getFallbackResponse(query) {
     const category = this.detectCategory(query);
-    
     const fallbacks = {
-      agriculture: "I can help with farming questions. Ask me about planting, pests, fertilizers, or harvesting for crops like rice, wheat, or corn.",
-      health: "I can help with health questions. Ask me about common ailments like fever, cough, stomach pain, or headache. I can also tell you about basic medicines and first aid.",
-      safety: "I can help with safety information. Ask me about fraud awareness, emergency numbers, or home safety tips.",
-      general: "I'm here to help! You can ask me about:\n• Farming and crops 🌾\n• Health and medicines 💊\n• Safety and fraud awareness 🛡️\n• Daily living tips 📅"
+      agriculture: "I can help with farming questions. Ask me about planting, pests, fertilizers, or harvesting for crops like rice, wheat, corn, cotton, sugarcane, tomato, potato, or onion.",
+      health: "I can help with health questions. Ask me about fever, cough, diabetes, blood pressure, diarrhea, malaria, pregnancy care, or medicines like paracetamol and ORS.",
+      safety: "I can help with safety information. Ask me about OTP scams, UPI fraud, emergency numbers (112, 108, 100, 1930), or home safety tips.",
+      government: "I can tell you about government schemes like PM-KISAN (Rs 6000/year for farmers), Ayushman Bharat (free health insurance), or ration card benefits.",
+      general: "I am here to help! You can ask me about:\n• Farming and crops\n• Health and medicines\n• Safety and fraud awareness\n• Government schemes\n• Emergency numbers",
     };
-
     return {
       success: true,
       response: fallbacks[category] || fallbacks.general,
       confidence: 0.3,
-      source: 'fallback'
+      source: 'fallback',
     };
   }
 
@@ -159,17 +227,18 @@ class EnhancedOfflineService {
    */
   detectCategory(query) {
     const lower = query.toLowerCase();
-    
-    if (/crop|farm|plant|pest|soil|fertilizer|harvest|rice|wheat|corn/.test(lower)) {
+    if (/crop|farm|plant|pest|soil|fertilizer|harvest|rice|wheat|corn|cotton|sugarcane|tomato|potato|onion|irrigation/.test(lower)) {
       return 'agriculture';
     }
-    if (/fever|pain|sick|medicine|doctor|health|cough|cold|headache/.test(lower)) {
+    if (/fever|pain|sick|medicine|doctor|health|cough|cold|headache|diabetes|blood pressure|diarrhea|malaria|pregnancy|mental/.test(lower)) {
       return 'health';
     }
-    if (/fraud|scam|otp|safety|emergency|police|fire/.test(lower)) {
+    if (/fraud|scam|otp|safety|emergency|police|fire|upi|bank|password|pin|cyber/.test(lower)) {
       return 'safety';
     }
-    
+    if (/scheme|pm kisan|ayushman|ration|government|subsidy/.test(lower)) {
+      return 'government';
+    }
     return 'general';
   }
 
