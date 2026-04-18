@@ -6,8 +6,8 @@
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "voiceaid",
-    "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
+    "userInterfaceStyle": "light",
+    "newArchEnabled": false,
     "splash": {
       "image": "./assets/images/splash-icon.png",
       "resizeMode": "contain",
@@ -17,8 +17,8 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.voiceaid.app",
       "infoPlist": {
-        "NSMicrophoneUsageDescription": "VoiceAid needs access to your microphone to record your voice messages for the AI assistant.",
-        "NSSpeechRecognitionUsageDescription": "VoiceAid uses speech recognition to process your voice commands."
+        "NSMicrophoneUsageDescription": "VoiceAid needs your microphone to listen to your voice questions.",
+        "NSSpeechRecognitionUsageDescription": "VoiceAid uses speech recognition to understand your questions."
       }
     },
     "android": {
@@ -30,7 +30,9 @@
       "package": "com.voiceaid.app",
       "permissions": [
         "android.permission.RECORD_AUDIO",
-        "android.permission.MODIFY_AUDIO_SETTINGS"
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "android.permission.INTERNET",
+        "android.permission.ACCESS_NETWORK_STATE"
       ]
     },
     "web": {
@@ -41,13 +43,20 @@
     "plugins": [
       "expo-router",
       [
-        "expo-av",
-        {
-          "microphonePermission": "Allow VoiceAid to access your microphone to record voice messages."
-        }
+        "expo-speech",
+        {}
       ],
       "expo-localization",
-      "expo-audio"
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "compileSdkVersion": 35,
+            "targetSdkVersion": 35,
+            "minSdkVersion": 24
+          }
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
