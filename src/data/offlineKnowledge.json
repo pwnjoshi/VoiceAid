@@ -149,6 +149,18 @@
         "home_treatment": "Wash eyes with clean water. Do not rub. Antibiotic eye drops for conjunctivitis as prescribed. Trachoma needs antibiotic treatment.",
         "when_to_see_doctor": "Blurred vision, severe pain, eye injury, symptoms not improving in 2 days, or trachoma signs.",
         "prevention": "Wash hands and face regularly. Do not share towels. Sunglasses in bright light. Vitamin A foods: orange vegetables, leafy greens."
+      },
+      "headache": {
+        "symptoms": "Pain in head, pressure feeling, sensitivity to light or sound, nausea, neck stiffness.",
+        "home_treatment": "Rest in quiet dark room. Apply cold compress on forehead. Drink water — dehydration is a common cause. Take paracetamol if needed. Massage temples gently. Avoid screen time.",
+        "when_to_see_doctor": "If headache is sudden and very severe, with fever and stiff neck, vision changes, after head injury, weakness in limbs, or recurring daily.",
+        "prevention": "Get adequate sleep 7-8 hours. Drink enough water. Manage stress. Eat regular meals. Limit screen time."
+      },
+      "stomach_pain": {
+        "symptoms": "Pain in belly area, cramping, bloating, nausea, vomiting, loss of appetite.",
+        "home_treatment": "Avoid heavy and spicy food. Drink warm water. Eat light food — rice, banana, boiled potato, curd. Rest. Take antacid for acidity. ORS for diarrhea.",
+        "when_to_see_doctor": "If pain is severe, lasts more than 6 hours, vomiting blood, black or bloody stool, fever with pain, or pain in right lower abdomen.",
+        "prevention": "Eat fresh food. Drink clean water. Wash hands before eating. Avoid overeating."
       }
     },
     "medicines": {
