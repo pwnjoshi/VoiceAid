@@ -1,153 +1,93 @@
-// Bedrock Service - Amazon Nova Sonic Integration
-// Handles voice processing and AI response generation via Amazon Bedrock
-
-const {
-  BedrockRuntimeClient,
-  InvokeModelCommand
-} = require('@aws-sdk/client-bedrock-runtime');
+/**
+ * BedrockService — Amazon Bedrock text generation
+ * Uses the Converse API (correct format for Nova/Claude models)
+ * Falls back gracefully when credentials are missing
+ */
+const { BedrockRuntimeClient, ConverseCommand } = require('@aws-sdk/client-bedrock-runtime');
 const { awsConfig } = require('../config/awsConfig');
 
-const bedrockClient = new BedrockRuntimeClient(awsConfig);
+let client = null;
+
+function getClient() {
+  if (!client) {
+    if (!awsConfig.credentials.accessKeyId || awsConfig.credentials.accessKeyId === 'your_access_key') {
+      return null;
+    }
+    client = new BedrockRuntimeClient(awsConfig);
+  }
+  return client;
+}
+
+// System prompt tuned for non-literate / elderly users
+const SYSTEM_PROMPT = `You are VoiceAid, a helpful voice assistant for rural and non-literate communities worldwide.
+Your answers must be:
+- Short (2-4 sentences maximum)
+- Simple language — no jargon
+- Practical and actionable
+- Spoken naturally (this will be read aloud)
+- Focused on agriculture, health, safety, livelihoods, or climate topics
+Never say "I cannot help" — always give the best practical advice you can.`;
 
 class BedrockService {
   /**
-   * Invoke Amazon Nova Sonic model for text generation
-   * @param {string} prompt - The input prompt/query
-   * @param {object} options - Configuration options
+   * Generate a response using Amazon Nova Lite via Converse API
+   * @param {string} userQuery
+   * @param {string[]} contextDocs — retrieved knowledge snippets
+   * @returns {{ success: boolean, response: string, model: string }}
    */
-  async invokeNovaModel(prompt, options = {}) {
-    try {
-      const {
-        maxTokens = 1024,
-        temperature = 0.7,
-        topP = 0.9
-      } = options;
+  async generateResponse(userQuery, contextDocs = []) {
+    const c = getClient();
+    if (!c) throw new Error('Bedrock client not configured');
 
-      // Prepare the request payload for Nova Sonic
-      const payload = {
-        prompt: prompt,
-        max_tokens: maxTokens,
-        temperature: temperature,
-        top_p: topP,
-        stop_sequences: ['\n\nUser:', '\n\nAssistant:']
-      };
-
-      const command = new InvokeModelCommand({
-        modelId: 'amazon.nova-lite-v1:0', // Nova Sonic model
-        contentType: 'application/json',
-        accept: 'application/json',
-        body: JSON.stringify(payload)
-      });
-
-      const response = await bedrockClient.send(command);
-      const responseBody = JSON.parse(new TextDecoder().decode(response.body));
-
-      return {
-        success: true,
-        response: responseBody.outputs[0].text,
-        model: 'amazon.nova-lite-v1:0',
-        usage: {
-          inputTokens: responseBody.usage?.input_tokens || 0,
-          outputTokens: responseBody.usage?.output_tokens || 0
-        }
-      };
-    } catch (error) {
-      console.error('Bedrock Model Invocation Error:', error);
-      throw new Error(`Failed to invoke Bedrock model: ${error.message}`);
+    // Build context block
+    let contextBlock = '';
+    if (contextDocs.length > 0) {
+      contextBlock = 'Relevant information:\n' +
+        contextDocs.map((d, i) => `${i + 1}. ${d.content || d}`).join('\n') +
+        '\n\n';
     }
+
+    const userMessage = `${contextBlock}Question: ${userQuery}`;
+
+    const command = new ConverseCommand({
+      modelId: 'amazon.nova-lite-v1:0',
+      system: [{ text: SYSTEM_PROMPT }],
+      messages: [
+        { role: 'user', content: [{ text: userMessage }] },
+      ],
+      inferenceConfig: {
+        maxTokens: 300,
+        temperature: 0.4,
+        topP: 0.9,
+      },
+    });
+
+    const response = await c.send(command);
+    const text = response.output?.message?.content?.[0]?.text || '';
+
+    return {
+      success: true,
+      response: text.trim(),
+      model: 'amazon.nova-lite-v1:0',
+      inputTokens:  response.usage?.inputTokens  || 0,
+      outputTokens: response.usage?.outputTokens || 0,
+    };
   }
 
   /**
-   * Generate response with context from knowledge base
-   * @param {string} userQuery - User's question
-   * @param {array} knowledgeContext - Retrieved knowledge documents
-   */
-  async generateContextualResponse(userQuery, knowledgeContext = []) {
-    try {
-      // Build context string from knowledge documents
-      let contextString = '';
-      if (knowledgeContext.length > 0) {
-        contextString = 'Based on the following information:\n\n';
-        knowledgeContext.forEach((doc, index) => {
-          contextString += `[Source ${index + 1}]: ${doc.content}\n`;
-        });
-        contextString += '\n';
-      }
-
-      // Create the prompt with context
-      const prompt = `${contextString}User Query: ${userQuery}\n\nProvide a helpful and accurate response:`;
-
-      // Invoke the model
-      const result = await this.invokeNovaModel(prompt, {
-        maxTokens: 512,
-        temperature: 0.5
-      });
-
-      return {
-        success: true,
-        response: result.response,
-        hasContext: knowledgeContext.length > 0,
-        sourceCount: knowledgeContext.length,
-        model: result.model
-      };
-    } catch (error) {
-      console.error('Contextual Response Generation Error:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Process voice transcription and generate response
-   * @param {string} transcribedText - Text from voice transcription
-   * @param {array} knowledgeContext - Retrieved knowledge
+   * Process a voice query with optional knowledge context
    */
   async processVoiceQuery(transcribedText, knowledgeContext = []) {
-    try {
-      const response = await this.generateContextualResponse(
-        transcribedText,
-        knowledgeContext
-      );
-
-      return {
-        success: true,
-        originalQuery: transcribedText,
-        aiResponse: response.response,
-        hasKnowledgeContext: response.hasContext,
-        sourceCount: response.sourceCount,
-        timestamp: new Date().toISOString()
-      };
-    } catch (error) {
-      console.error('Voice Query Processing Error:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Summarize knowledge documents
-   * @param {array} documents - Array of documents to summarize
-   */
-  async summarizeDocuments(documents) {
-    try {
-      const documentText = documents
-        .map((doc, i) => `Document ${i + 1}:\n${doc.content}`)
-        .join('\n\n---\n\n');
-
-      const prompt = `Summarize the following documents in 2-3 sentences:\n\n${documentText}`;
-
-      const result = await this.invokeNovaModel(prompt, {
-        maxTokens: 256,
-        temperature: 0.3
-      });
-
-      return {
-        success: true,
-        summary: result.response,
-        documentCount: documents.length
-      };
-    } catch (error) {
-      console.error('Document Summarization Error:', error);
-      throw error;
-    }
+    const result = await this.generateResponse(transcribedText, knowledgeContext);
+    return {
+      success:             true,
+      originalQuery:       transcribedText,
+      aiResponse:          result.response,
+      hasKnowledgeContext: knowledgeContext.length > 0,
+      sourceCount:         knowledgeContext.length,
+      model:               result.model,
+      timestamp:           new Date().toISOString(),
+    };
   }
 }
 
