@@ -85,11 +85,21 @@ export default function HomeScreen() {
 
   const sttLocale = LOCALE_MAP[i18n.language] || 'en-US';
 
-  // ── Load Voice module (native — may not be available in Expo Go) ────────────
+  // ── Load Voice module (native — not available in Expo Go) ─────────────────
   useEffect(() => {
     let Voice = null;
     try {
-      Voice = require('@react-native-voice/voice').default;
+      const mod = require('@react-native-voice/voice');
+      Voice = mod.default || mod;
+
+      // In Expo Go the JS module loads but the native bridge is null.
+      // Check for the native module before wiring up any handlers.
+      const { NativeModules } = require('react-native');
+      if (!NativeModules.RCTVoice && !NativeModules.Voice) {
+        setSttAvailable(false);
+        return;
+      }
+
       VoiceRef.current = Voice;
     } catch {
       setSttAvailable(false);
@@ -206,6 +216,10 @@ export default function HomeScreen() {
 
   // ── Start STT ───────────────────────────────────────────────────────────────
   const startListening = async () => {
+    if (!VoiceRef.current) {
+      setSttAvailable(false);
+      return;
+    }
     setErrorMsg('');
     setResponse('');
     setTranscript('');
@@ -229,7 +243,7 @@ export default function HomeScreen() {
   // ── Stop STT ────────────────────────────────────────────────────────────────
   const stopListening = async () => {
     try {
-      await VoiceRef.current.stop();
+      if (VoiceRef.current) await VoiceRef.current.stop();
       setTimeout(() => {
         if (stateRef.current === S.LISTENING) {
           processText(transcriptRef.current || partialRef.current);

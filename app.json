@@ -42,21 +42,7 @@
     },
     "plugins": [
       "expo-router",
-      [
-        "expo-speech",
-        {}
-      ],
-      "expo-localization",
-      [
-        "expo-build-properties",
-        {
-          "android": {
-            "compileSdkVersion": 35,
-            "targetSdkVersion": 35,
-            "minSdkVersion": 24
-          }
-        }
-      ]
+      "expo-localization"
     ],
     "experiments": {
       "typedRoutes": true
