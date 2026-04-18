@@ -57,7 +57,9 @@
     "agriculture": "Agriculture",
     "health": "Health",
     "safety": "Safety",
-    "general": "General"
+    "general": "General",
+    "livelihoods": "Livelihoods",
+    "climate": "Climate"
   },
   "status": {
     "online": "Online",

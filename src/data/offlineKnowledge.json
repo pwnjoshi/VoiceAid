@@ -1,226 +1,295 @@
-{
+﻿{
+  "meta": {
+    "version": "3.0",
+    "scope": "global",
+    "languages_supported": 11,
+    "last_updated": "2026-04-18",
+    "coverage": "India, Africa, SE Asia, Latin America, Middle East"
+  },
   "agriculture": {
     "crops": {
       "rice": {
-        "planting": "Plant rice in flooded fields. Sow seeds 2-3 cm deep. Space rows 20 cm apart. Best season: June-July (monsoon). Use certified seeds for better yield.",
-        "pests": "Common pests: Stem borer, leaf folder, brown planthopper. Use neem oil spray — mix 10ml neem oil per liter water. Spray early morning. Remove affected plants immediately.",
-        "fertilizer": "Apply urea 50kg per acre after 20 days. Use DAP 25kg at planting. Add potash 12kg before flowering. Use organic compost to improve soil health.",
-        "harvest": "Harvest when 80% grains turn golden yellow. Usually 120-140 days after planting. Cut and dry for 3-4 days. Store in dry place to prevent fungus.",
-        "water": "Rice needs 5-10 cm standing water during growing. Drain field 2 weeks before harvest. Avoid water stress during flowering stage."
+        "planting": "Plant rice in flooded fields. Sow seeds 2-3 cm deep. Row spacing 20 cm. Best season: start of monsoon or rainy season. Use certified seeds for 20-30% better yield.",
+        "pests": "Stem borer, leaf folder, brown planthopper. Neem oil spray: 10ml per liter water, spray early morning. Remove affected plants. Yellow sticky traps for whitefly.",
+        "fertilizer": "Urea 50kg per acre after 20 days. DAP 25kg at planting. Potash 12kg before flowering. Organic compost improves soil long-term.",
+        "harvest": "Harvest when 80% grains turn golden. 120-140 days after planting. Dry 3-4 days. Store in dry airtight place to prevent fungus and pests.",
+        "water": "5-10 cm standing water during growing. Drain 2 weeks before harvest. Never let field dry during flowering."
       },
       "wheat": {
-        "planting": "Sow wheat in November. Seed rate: 40kg per acre. Row spacing: 20cm. Depth: 5cm. Ensure good soil moisture before sowing.",
-        "pests": "Watch for aphids, termites, and rust disease. Use neem cake in soil before planting. Spray neem oil if aphids appear. Remove rust-infected leaves.",
-        "fertilizer": "Apply urea 50kg, DAP 50kg per acre. Split urea: half at sowing, half after 30 days. Add zinc sulfate 5kg if soil is deficient.",
-        "harvest": "Harvest in March-April when grains are hard and golden. Takes 120-150 days from sowing. Thresh immediately after cutting to avoid losses.",
-        "water": "Water at crown root initiation (21 days), tillering (45 days), jointing (65 days), and grain filling (90 days) stages."
+        "planting": "Sow in cool season: November in South Asia, April-May in East Africa highlands. Seed rate 40kg per acre. Row spacing 20cm. Depth 5cm.",
+        "pests": "Aphids, rust disease, termites. Neem cake in soil before planting. Spray neem oil for aphids. Remove rust-infected leaves immediately.",
+        "fertilizer": "Urea 50kg, DAP 50kg per acre. Split urea: half at sowing, half at 30 days. Zinc sulfate 5kg if soil deficient.",
+        "harvest": "Harvest when grains are hard and golden. 120-150 days from sowing. Thresh immediately after cutting.",
+        "water": "Water at 4 critical stages: 21, 45, 65, and 90 days after sowing."
       },
       "corn": {
-        "planting": "Plant corn in rows 60cm apart. Seeds 20cm apart in row. Depth: 5cm. Season: February-March or July-August. Use hybrid seeds for better yield.",
-        "pests": "Common: Fall armyworm, stem borer. Remove affected leaves. Use neem spray weekly. Apply sand in leaf whorl for armyworm control.",
-        "fertilizer": "Use compost 5 tons per acre. Add urea 60kg in 2 splits: at 20 and 40 days. Apply DAP 50kg at planting.",
-        "harvest": "Ready in 90-110 days. Harvest when kernels are firm and milky inside. Dry cobs in sun for 5-7 days before storage.",
-        "water": "Critical water stages: germination, knee-high, tasseling, and grain fill. Avoid waterlogging — corn roots rot easily."
+        "planting": "Rows 60cm apart, seeds 20cm apart. Depth 5cm. Plant at start of rainy season. Hybrid seeds give 50% more yield.",
+        "pests": "Fall armyworm is most dangerous — apply sand in leaf whorl. Stem borer — neem spray weekly. Check plants daily in early growth.",
+        "fertilizer": "Compost 5 tons per acre. Urea 60kg in 2 splits at 20 and 40 days. DAP 50kg at planting.",
+        "harvest": "90-110 days. Harvest when kernels are firm. Dry cobs 5-7 days before storage.",
+        "water": "Critical stages: germination, knee-high, tasseling, grain fill. Avoid waterlogging."
       },
-      "cotton": {
-        "planting": "Sow cotton in May-June after first monsoon rain. Row spacing: 90cm, plant spacing: 60cm. Depth: 3-4cm. Use Bt cotton seeds for pest resistance.",
-        "pests": "Major pests: Bollworm, whitefly, aphids. Bt cotton resists bollworm. For whitefly, use yellow sticky traps. Spray neem oil for aphids.",
-        "fertilizer": "Apply DAP 50kg, urea 60kg, potash 30kg per acre. Give extra potash during boll formation. Foliar spray of micronutrients helps.",
-        "harvest": "Pick cotton when bolls open fully — white fluffy fiber visible. Pick every 15-20 days. Avoid picking wet cotton. Store in dry bags.",
-        "water": "Cotton needs moderate water. Critical stages: germination, flowering, boll formation. Avoid waterlogging. Drip irrigation saves 40% water."
+      "cassava": {
+        "planting": "Plant cuttings 20-30cm long at 45-degree angle. Spacing 1m x 1m. Well-drained soil. Plant at start of rainy season. Major food crop in Africa and SE Asia.",
+        "pests": "Cassava mosaic disease — use disease-free cuttings only. Mealybugs — spray neem oil. Whitefly — yellow sticky traps.",
+        "fertilizer": "NPK 15:15:15 at 200kg per hectare. Organic compost. Grows in poor soil but responds well to potassium.",
+        "harvest": "Ready in 8-12 months when leaves turn yellow. Dig carefully. Process within 24-48 hours — fresh cassava contains cyanide that must be removed by cooking or fermentation.",
+        "water": "Drought tolerant. Needs water only at establishment. Grows well in 1000-1500mm annual rainfall."
       },
-      "sugarcane": {
-        "planting": "Plant sugarcane in February-March or October-November. Use 3-bud setts. Row spacing: 90cm. Depth: 5-8cm. Treat setts with fungicide before planting.",
-        "pests": "Major pests: Early shoot borer, top borer, pyrilla. Use pheromone traps for borers. Release Trichogramma parasites for biological control.",
-        "fertilizer": "Apply urea 120kg, DAP 60kg, potash 60kg per acre in splits. Give first dose at planting, second at 60 days, third at 120 days.",
-        "harvest": "Harvest at 10-12 months. Cane is ready when juice Brix is 18-20%. Cut close to ground. Ratoon crop can be taken for 2-3 years.",
-        "water": "Sugarcane needs heavy irrigation — 1500-2500mm total. Critical stages: germination, tillering, grand growth. Drip irrigation increases yield by 30%."
+      "sorghum": {
+        "planting": "Sow at start of rainy season. Seed rate 5-8kg per hectare. Row spacing 75cm. Depth 3-5cm. Most drought-resistant cereal crop.",
+        "pests": "Stem borer and shoot fly. Use resistant varieties. Neem oil at early stage. Bird scarers at grain stage.",
+        "fertilizer": "Urea 60kg per hectare. DAP 50kg at planting. Needs less fertilizer than maize.",
+        "harvest": "90-120 days. Harvest when grain is hard and moisture below 20%. Dry before storage.",
+        "water": "Very drought tolerant — needs only 400-600mm rainfall. Critical stage: flowering and grain fill."
+      },
+      "banana": {
+        "planting": "Plant suckers or tissue culture plants. Spacing 2m x 2m. Dig 60cm deep pit. Fill with compost. Humid tropical climate. Major crop in East Africa, SE Asia, Latin America.",
+        "pests": "Panama disease — use resistant varieties. Banana weevil — carbofuran in soil. Black sigatoka — copper fungicide spray.",
+        "fertilizer": "Compost 20kg per plant every 3 months. Urea 200g, potash 300g per plant monthly. Heavy feeder.",
+        "harvest": "9-12 months. Harvest when fingers are plump and angular. Cut bunch with sharp knife. Handle carefully.",
+        "water": "Needs regular water 1200-2200mm per year. Mulch heavily. Avoid waterlogging."
+      },
+      "groundnut": {
+        "planting": "Sow at start of rainy season. Seed rate 80-100kg per hectare. Row spacing 30cm. Depth 5cm. Shell seeds just before planting. Major crop in West Africa, South Asia.",
+        "pests": "Leaf spot, rosette virus, termites. Certified disease-free seeds. Mancozeb for leaf spot. Treat soil for termites.",
+        "fertilizer": "Fixes nitrogen — needs less urea. DAP 50kg, potash 25kg per hectare. Gypsum at flowering improves pod fill.",
+        "harvest": "90-120 days. Harvest when leaves turn yellow. Dry in sun 5-7 days. Store in dry place. Check for aflatoxin mold.",
+        "water": "Needs 500-700mm rainfall. Critical: flowering and pod fill. Avoid waterlogging — causes aflatoxin."
       },
       "tomato": {
-        "planting": "Sow seeds in nursery first. Transplant 25-30 day old seedlings. Row spacing: 60cm, plant spacing: 45cm. Best season: October-November or February-March.",
-        "pests": "Common: Fruit borer, leaf curl virus, early blight. Use yellow sticky traps for whitefly. Spray copper fungicide for blight. Remove virus-infected plants.",
-        "fertilizer": "Apply compost 10 tons per acre. Add NPK 19:19:19 at transplanting. Give calcium and boron spray during fruiting for quality improvement.",
-        "harvest": "Harvest when fruits turn red or pink depending on variety. Pick every 3-4 days. Handle carefully to avoid bruising. Store at room temperature.",
-        "water": "Regular watering needed — avoid drought stress. Drip irrigation preferred. Mulching reduces water need by 30% and controls weeds."
+        "planting": "Sow in nursery first. Transplant 25-30 day seedlings. Row spacing 60cm, plant spacing 45cm. Grows in most climates with irrigation.",
+        "pests": "Fruit borer, leaf curl virus, early blight. Yellow sticky traps for whitefly. Copper fungicide for blight. Remove virus-infected plants.",
+        "fertilizer": "Compost 10 tons per acre. NPK 19:19:19 at transplanting. Calcium and boron spray during fruiting.",
+        "harvest": "Harvest when fruits turn red or pink. Pick every 3-4 days. Handle carefully. Store at room temperature.",
+        "water": "Regular watering needed. Drip irrigation preferred. Mulching reduces water need 30%."
       },
       "potato": {
-        "planting": "Plant potato in October-November in plains, March-April in hills. Use certified seed tubers. Row spacing: 60cm, plant spacing: 20cm. Depth: 5-8cm.",
-        "pests": "Major: Late blight (most dangerous), aphids, cutworm. Spray Mancozeb fungicide for blight at first sign. Use neem oil for aphids.",
-        "fertilizer": "Apply urea 60kg, DAP 75kg, potash 75kg per acre. Give half at planting, half at earthing up (30 days). Potash improves tuber quality.",
-        "harvest": "Ready in 70-90 days. Harvest when leaves turn yellow. Dig carefully to avoid cutting tubers. Cure in shade for 10 days before storage.",
-        "water": "Potato needs regular moisture. Critical stages: tuber initiation and bulking. Avoid waterlogging — causes rotting. Stop irrigation 2 weeks before harvest."
+        "planting": "Plant certified seed tubers. Row spacing 60cm, plant spacing 20cm. Depth 5-8cm. Cool season crop — highlands in tropics.",
+        "pests": "Late blight most dangerous — spray Mancozeb at first sign. Aphids — neem oil. Cutworm — soil treatment.",
+        "fertilizer": "Urea 60kg, DAP 75kg, potash 75kg per acre. Half at planting, half at earthing up.",
+        "harvest": "70-90 days. Harvest when leaves turn yellow. Cure in shade 10 days before storage.",
+        "water": "Regular moisture needed. Stop irrigation 2 weeks before harvest. Avoid waterlogging."
       },
-      "onion": {
-        "planting": "Sow seeds in nursery. Transplant 6-8 week old seedlings. Row spacing: 15cm, plant spacing: 10cm. Kharif: June-July, Rabi: October-November.",
-        "pests": "Thrips are major pest — use blue sticky traps. Purple blotch fungal disease — spray Mancozeb. Basal rot — avoid waterlogging.",
-        "fertilizer": "Apply urea 50kg, DAP 50kg, potash 50kg per acre. Sulfur 20kg improves pungency and shelf life. Avoid excess nitrogen near harvest.",
-        "harvest": "Harvest when 50% tops fall over. Pull out bulbs and dry in field for 3-4 days. Cure in shade for 2 weeks. Store in well-ventilated place.",
-        "water": "Regular irrigation needed. Stop watering 2 weeks before harvest for better storage. Drip irrigation reduces disease and saves water."
+      "beans": {
+        "planting": "Sow at start of rainy season. Row spacing 45cm, seed spacing 10cm. Depth 3-5cm. Grows in most tropical and subtropical areas. Excellent protein source.",
+        "pests": "Bean fly, aphids, bean rust. Treat seeds before planting. Neem oil for aphids. Remove rust-infected leaves.",
+        "fertilizer": "Beans fix nitrogen — needs less fertilizer. DAP 30kg per hectare at planting. Potash 20kg improves yield.",
+        "harvest": "60-90 days depending on variety. Harvest dry beans when pods are dry and rattle. Dry further before storage.",
+        "water": "Needs 300-400mm rainfall. Drought tolerant but needs water at flowering. Avoid waterlogging."
       }
     },
     "general": {
-      "soil_preparation": "Plow field 2-3 times. Add organic manure 5-10 tons per acre. Level the field properly. Ensure good drainage. Test soil pH — ideal is 6-7.",
-      "irrigation": "Water early morning or evening. Check soil moisture by hand. If top 5cm is dry, water deeply. Avoid overwatering — causes root rot.",
-      "organic_pest_control": "Neem oil spray: 10ml per liter water. Garlic spray: Crush 100g garlic in 1 liter water, strain and spray. Chili spray: Boil 100g chili in water, cool and spray.",
-      "composting": "Mix kitchen waste, dry leaves, cow dung. Keep moist. Turn every week. Ready in 2-3 months. Use 5kg per plant.",
-      "soil_testing": "Test soil every 3 years. Check pH, nitrogen, phosphorus, potassium. Contact local agriculture office for free testing. Results guide fertilizer use.",
-      "crop_rotation": "Rotate crops every season. After rice, grow wheat or pulses. After cotton, grow wheat. Rotation breaks pest cycles and improves soil health.",
-      "weather_advisory": "Check weather before sowing. Avoid sowing before heavy rain. Harvest before monsoon if possible. Use weather app or call 1551 for Kisan Call Center."
+      "soil_preparation": "Plow field 2-3 times. Add organic manure 5-10 tons per hectare. Level field properly. Ensure good drainage. Test soil pH — ideal 6-7.",
+      "organic_pest_control": "Neem oil: 10ml per liter water. Garlic spray: crush 100g garlic in 1 liter water, strain, spray. Chili spray: boil 100g chili in water, cool, spray. Safe, cheap, effective.",
+      "composting": "Mix kitchen waste, dry leaves, animal manure. Keep moist. Turn weekly. Ready in 2-3 months. Reduces need for chemical fertilizer.",
+      "post_harvest": "Dry crops properly before storage. Use airtight containers or hermetic bags. Add dried neem leaves to repel insects. Check stored grain monthly.",
+      "climate_adaptation": "Use drought-tolerant varieties. Practice water harvesting. Plant trees as windbreaks. Diversify crops to reduce risk from climate change.",
+      "crop_rotation": "After cereals, grow legumes like beans or groundnut. Rotation breaks pest cycles and improves soil health naturally."
     }
   },
   "health": {
     "common_ailments": {
       "fever": {
-        "symptoms": "Body temperature above 100°F (37.8°C), feeling hot, sweating, weakness, body ache.",
-        "home_treatment": "Rest completely. Drink plenty of water and fluids. Take paracetamol 500mg every 6 hours. Sponge with lukewarm water. Eat light food.",
-        "when_to_see_doctor": "If fever lasts more than 3 days, temperature above 103°F, severe headache, difficulty breathing, rash appears, or child under 2 years.",
-        "prevention": "Drink clean water. Wash hands frequently. Avoid mosquito bites. Get adequate sleep. Eat nutritious food."
+        "symptoms": "Temperature above 38C (100.4F), feeling hot, sweating, weakness, body ache, chills.",
+        "home_treatment": "Rest. Drink 8+ glasses of water and fluids daily. Paracetamol 500mg every 6 hours for adults. Sponge with lukewarm water. Eat light food.",
+        "when_to_see_doctor": "Fever over 3 days, temperature above 39.5C, severe headache, difficulty breathing, rash, confusion, or child under 2 years.",
+        "prevention": "Drink clean boiled water. Wash hands with soap. Use mosquito net. Get vaccinations. Eat nutritious food."
       },
-      "cold_cough": {
-        "symptoms": "Runny nose, sneezing, cough, sore throat, mild fever, body ache.",
-        "home_treatment": "Drink warm water with honey and ginger. Steam inhalation 2-3 times daily. Gargle with salt water. Rest well. Tulsi tea helps.",
-        "when_to_see_doctor": "If cough lasts more than 2 weeks, blood in cough, high fever, chest pain, or difficulty breathing.",
-        "prevention": "Avoid cold drinks. Cover mouth when coughing. Wash hands regularly. Avoid crowded places during flu season."
+      "diarrhea": {
+        "symptoms": "Loose watery stools 3+ times per day, cramps, nausea, dehydration: dry mouth, sunken eyes, less urine, weakness.",
+        "home_treatment": "ORS is most important — mix 1 liter clean water, 6 teaspoons sugar, half teaspoon salt. Drink continuously. Eat rice, banana, boiled potato. Avoid dairy and spicy food.",
+        "when_to_see_doctor": "Diarrhea over 2 days, blood in stool, high fever, severe dehydration, child under 5, or elderly person.",
+        "prevention": "Drink boiled or filtered water. Wash hands with soap before eating and after toilet. Eat freshly cooked food. Cover food."
       },
-      "stomach_pain": {
-        "symptoms": "Pain in belly area, cramping, bloating, nausea, loss of appetite.",
-        "home_treatment": "Avoid heavy food. Drink warm water. Eat light food like rice, curd, banana. Rest. Take antacid if acidity. ORS for diarrhea.",
-        "when_to_see_doctor": "If pain is severe, lasts more than 6 hours, vomiting blood, black stool, or fever with pain.",
-        "prevention": "Eat fresh food. Drink clean water. Wash hands before eating. Avoid overeating. Eat at regular times."
+      "malaria": {
+        "symptoms": "Cyclical fever with chills every 48-72 hours, severe headache, body ache, nausea, vomiting, fatigue. Can be fatal if untreated.",
+        "home_treatment": "Seek medical care immediately. Take prescribed antimalarial medicines completely. Rest. Drink fluids. Paracetamol for fever. Never stop medicines early.",
+        "when_to_see_doctor": "Immediately — do not delay. Get blood test. Severe malaria with confusion or difficulty breathing is emergency.",
+        "prevention": "Sleep under insecticide-treated mosquito net every night. Use repellent. Remove stagnant water. Wear long sleeves in evening."
       },
-      "headache": {
-        "symptoms": "Pain in head, pressure feeling, sensitivity to light or sound, nausea.",
-        "home_treatment": "Rest in quiet dark room. Apply cold compress on forehead. Drink water. Take paracetamol if needed. Massage temples gently. Avoid screen time.",
-        "when_to_see_doctor": "If headache is sudden and severe, with fever and stiff neck, vision changes, after head injury, or recurring daily.",
-        "prevention": "Get adequate sleep. Drink enough water. Avoid stress. Eat regular meals. Limit screen time."
+      "tuberculosis": {
+        "symptoms": "Persistent cough over 2 weeks, coughing blood, night sweats, unexplained weight loss, fever, fatigue, chest pain.",
+        "home_treatment": "TB requires 6 months of antibiotics — take all medicines as prescribed, never stop early. Eat nutritious food. Cover mouth when coughing. Free treatment at government health centers.",
+        "when_to_see_doctor": "Immediately if cough lasts over 2 weeks. TB is curable with proper treatment.",
+        "prevention": "BCG vaccination for children. Good ventilation in home. Nutritious food. Get tested if in contact with TB patient."
+      },
+      "cholera": {
+        "symptoms": "Sudden profuse watery diarrhea like rice water, vomiting, rapid dehydration, muscle cramps. Can be fatal within hours.",
+        "home_treatment": "ORS immediately and continuously — life-saving. Drink as much as possible. Seek medical care urgently — needs IV fluids if severe.",
+        "when_to_see_doctor": "Immediately — cholera is a medical emergency. Go to nearest health facility now.",
+        "prevention": "Drink only boiled or treated water. Wash hands with soap. Eat freshly cooked food. Cholera vaccine available."
       },
       "diabetes": {
-        "symptoms": "Frequent urination, excessive thirst, unexplained weight loss, blurred vision, slow healing wounds, fatigue.",
-        "home_treatment": "Follow prescribed medicines strictly. Eat low sugar, low carb diet. Exercise 30 minutes daily. Monitor blood sugar regularly. Avoid sweets and white rice.",
-        "when_to_see_doctor": "Immediately if blood sugar above 300 or below 70. Regular check every 3 months. Annual eye and kidney check.",
-        "prevention": "Maintain healthy weight. Exercise regularly. Eat balanced diet. Avoid sugary drinks. Get blood sugar tested yearly after age 40."
+        "symptoms": "Frequent urination especially at night, excessive thirst, weight loss, blurred vision, slow healing wounds, fatigue, tingling in hands and feet.",
+        "home_treatment": "Take medicines strictly — never skip. Low sugar, low refined carb diet. Exercise 30 minutes daily. Monitor blood sugar. Avoid sweets, white rice, sugary drinks.",
+        "when_to_see_doctor": "Blood sugar above 300 or below 70 — immediately. Regular check every 3 months. Annual eye and kidney check.",
+        "prevention": "Maintain healthy weight. Exercise regularly. Balanced diet. Avoid sugary drinks. Blood sugar test yearly after age 40."
       },
       "blood_pressure": {
         "symptoms": "High BP: headache, dizziness, blurred vision, chest pain. Low BP: dizziness, fainting, weakness, cold skin.",
-        "home_treatment": "High BP: Take medicines regularly, reduce salt, exercise, avoid stress. Low BP: Drink more water, eat small frequent meals, avoid standing suddenly.",
-        "when_to_see_doctor": "If BP above 180/120 or below 90/60. Chest pain, severe headache, or vision changes — go to emergency immediately.",
-        "prevention": "Reduce salt intake. Exercise regularly. Maintain healthy weight. Avoid smoking and alcohol. Manage stress. Check BP monthly."
+        "home_treatment": "High BP: medicines daily, reduce salt below 5g per day, exercise, quit smoking. Low BP: more water, small frequent meals, avoid standing suddenly.",
+        "when_to_see_doctor": "BP above 180/120 or below 90/60. Chest pain, severe headache, vision changes — emergency immediately.",
+        "prevention": "Reduce salt. Exercise 30 minutes daily. Healthy weight. No smoking or alcohol. Check BP monthly after age 40."
       },
-      "diarrhea": {
-        "symptoms": "Loose watery stools 3 or more times a day, stomach cramps, nausea, dehydration signs: dry mouth, less urine.",
-        "home_treatment": "Drink ORS (Oral Rehydration Solution) — mix 1 liter clean water, 6 teaspoons sugar, half teaspoon salt. Eat rice, banana, curd. Avoid spicy food.",
-        "when_to_see_doctor": "If diarrhea lasts more than 2 days, blood in stool, high fever, signs of severe dehydration, or child under 5 years.",
-        "prevention": "Drink boiled or filtered water. Wash hands before eating. Eat freshly cooked food. Cover food to prevent flies."
+      "hiv_aids": {
+        "symptoms": "Early: flu-like illness 2-4 weeks after infection. Later: weight loss, frequent infections, diarrhea, skin problems. Many have no symptoms for years.",
+        "home_treatment": "Antiretroviral therapy (ART) — free at government hospitals. Take medicines daily without fail. Nutritious food. Exercise. Avoid alcohol.",
+        "when_to_see_doctor": "Get tested if at risk. Start ART as soon as possible after diagnosis. Regular monitoring.",
+        "prevention": "Use condoms consistently. Get tested with partner. Do not share needles. ART during pregnancy prevents mother-to-child transmission."
       },
-      "malaria": {
-        "symptoms": "Cyclical fever with chills and sweating every 48-72 hours, headache, body ache, nausea, vomiting.",
-        "home_treatment": "Take prescribed antimalarial medicines completely. Rest. Drink plenty of fluids. Take paracetamol for fever. Do not stop medicines early.",
-        "when_to_see_doctor": "Immediately if suspected malaria. Get blood test done. Severe malaria with confusion or difficulty breathing needs emergency care.",
-        "prevention": "Sleep under mosquito net. Use mosquito repellent. Remove stagnant water near home. Wear full sleeve clothes in evening."
+      "malnutrition": {
+        "symptoms": "Children: low weight, stunted growth, swollen belly, thin limbs, hair loss. Adults: extreme thinness, weakness, poor wound healing.",
+        "home_treatment": "Eat diverse foods: cereals, legumes, vegetables, fruits, animal products. Breastfeed infants exclusively 6 months. Treat infections promptly.",
+        "when_to_see_doctor": "Immediately for severe malnutrition in children — life-threatening. Therapeutic feeding centers provide free treatment.",
+        "prevention": "Diverse diet. Exclusive breastfeeding 6 months. Complementary foods from 6 months. Grow kitchen garden."
       },
       "eye_problems": {
-        "symptoms": "Redness, itching, discharge, blurred vision, pain in eye, sensitivity to light.",
-        "home_treatment": "Wash eyes with clean water. Do not rub eyes. Use clean cloth to wipe. For conjunctivitis, use antibiotic eye drops as prescribed.",
-        "when_to_see_doctor": "If vision is blurred, severe pain, injury to eye, or symptoms do not improve in 2 days.",
-        "prevention": "Wash hands before touching eyes. Wear sunglasses in bright light. Eat vitamin A rich foods — carrots, green leafy vegetables."
-      },
-      "skin_problems": {
-        "symptoms": "Rash, itching, redness, blisters, dry or scaly skin, swelling.",
-        "home_treatment": "Keep skin clean and dry. Apply coconut oil for dry skin. For fungal infection, use antifungal cream. Avoid scratching.",
-        "when_to_see_doctor": "If rash spreads rapidly, fever with rash, pus formation, or does not improve in a week.",
-        "prevention": "Bathe daily. Wear clean clothes. Avoid sharing towels. Keep skin moisturized. Wear cotton clothes in hot weather."
+        "symptoms": "Redness, itching, discharge, blurred vision, pain, sensitivity to light, trachoma (rough inner eyelid).",
+        "home_treatment": "Wash eyes with clean water. Do not rub. Antibiotic eye drops for conjunctivitis as prescribed. Trachoma needs antibiotic treatment.",
+        "when_to_see_doctor": "Blurred vision, severe pain, eye injury, symptoms not improving in 2 days, or trachoma signs.",
+        "prevention": "Wash hands and face regularly. Do not share towels. Sunglasses in bright light. Vitamin A foods: orange vegetables, leafy greens."
       }
     },
     "medicines": {
       "paracetamol": {
-        "use": "For fever and pain relief",
-        "dosage": "Adults: 500-1000mg every 6-8 hours. Maximum 4000mg per day. Children: Consult doctor for weight-based dosing.",
-        "precautions": "Do not exceed maximum dose. Avoid alcohol. Take with food if stomach upset. Do not use with other paracetamol-containing medicines."
-      },
-      "antacid": {
-        "use": "For acidity, heartburn, and stomach upset",
-        "dosage": "1-2 tablets after meals and at bedtime. Or as directed by doctor.",
-        "precautions": "Do not take with other medicines — wait 2 hours. Drink plenty of water. Do not use for more than 2 weeks without doctor advice."
+        "use": "Fever and pain relief",
+        "dosage": "Adults: 500-1000mg every 6-8 hours. Max 4000mg per day. Children: 10-15mg per kg every 6 hours.",
+        "precautions": "Do not exceed maximum dose. Avoid alcohol. Take with food if stomach upset."
       },
       "ors": {
-        "use": "For dehydration from diarrhea, vomiting, or fever",
-        "dosage": "Dissolve 1 ORS packet in 1 liter clean water. Drink small sips frequently. Adults: 200-400ml after each loose stool.",
-        "precautions": "Use clean water only. Prepare fresh every 24 hours. Do not add extra sugar or salt. Continue breastfeeding for infants."
+        "use": "Dehydration from diarrhea, vomiting, fever — most important medicine for diarrhea",
+        "dosage": "1 ORS packet in 1 liter clean water. Small sips frequently. Adults: 200-400ml after each loose stool.",
+        "precautions": "Clean water only. Prepare fresh every 24 hours. Do not add extra sugar or salt."
+      },
+      "zinc": {
+        "use": "Diarrhea in children — reduces duration and severity",
+        "dosage": "Under 6 months: 10mg daily 14 days. Over 6 months: 20mg daily 14 days.",
+        "precautions": "Give with ORS. May cause vomiting — give with food. Complete full 14-day course."
+      },
+      "albendazole": {
+        "use": "Intestinal worms — roundworm, hookworm, whipworm",
+        "dosage": "Adults and children over 2 years: 400mg single dose. Repeat every 6 months in high-risk areas.",
+        "precautions": "Take with food. Not for children under 1 year. Pregnant women — consult doctor."
       },
       "iron_folic_acid": {
-        "use": "For anemia, especially in pregnant women and children",
-        "dosage": "1 tablet daily after meals. Pregnant women: as prescribed by doctor.",
-        "precautions": "Take with vitamin C (lemon juice) for better absorption. May cause dark stools — this is normal. Avoid tea/coffee within 1 hour."
+        "use": "Anemia, especially pregnant women and children",
+        "dosage": "1 tablet daily after meals. Pregnant women: as prescribed.",
+        "precautions": "Take with vitamin C for better absorption. Dark stools are normal. Avoid tea/coffee within 1 hour."
       }
     },
     "first_aid": {
-      "cuts_wounds": "Wash with clean water for 5 minutes. Apply pressure with clean cloth to stop bleeding. Clean with antiseptic. Cover with clean bandage. Change daily. See doctor if deep or dirty wound.",
-      "burns": "Cool with running water for 10-20 minutes. Do not apply ice, oil, toothpaste, or butter. Cover with clean cloth. Take paracetamol for pain. See doctor if burn is large or on face/hands.",
-      "snake_bite": "Keep calm — panic increases venom spread. Immobilize affected limb. Remove jewelry and tight clothing. Do not cut, suck, or apply tourniquet. Rush to hospital immediately. Note snake appearance if safe.",
-      "insect_bite": "Wash area with soap and water. Apply ice pack for 10 minutes. Take antihistamine tablet for itching. See doctor if swelling increases, difficulty breathing, or allergic reaction.",
-      "choking": "For adult: Give 5 back blows between shoulder blades. Then 5 abdominal thrusts (Heimlich maneuver). Repeat until object comes out. Call 108 if unconscious.",
-      "fracture": "Do not move injured person unnecessarily. Immobilize the injured part with splint or rolled newspaper. Apply ice pack. Call 108 for emergency. Do not try to straighten broken bone."
+      "cuts_wounds": "Wash with clean water 5 minutes. Pressure with clean cloth to stop bleeding. Antiseptic if available. Clean bandage. Change daily. Doctor if deep or does not stop bleeding.",
+      "burns": "Cool with running water 10-20 minutes immediately. No ice, oil, toothpaste, or traditional remedies. Clean cloth cover. Paracetamol for pain. Doctor if large, deep, or on face/hands.",
+      "snake_bite": "Keep calm. Immobilize limb below heart. Remove jewelry. Do not cut, suck, or apply tourniquet. Rush to hospital immediately. Note snake appearance if safe.",
+      "choking": "5 firm back blows between shoulder blades. Then 5 abdominal thrusts. Repeat until object comes out. Call emergency if unconscious.",
+      "drowning": "Remove from water safely. Check breathing. If not breathing, start CPR: 30 chest compressions then 2 rescue breaths. Continue until help arrives.",
+      "heat_stroke": "Move to cool shade immediately. Remove excess clothing. Cool with wet cloths on neck, armpits, groin. Fan person. Give cool water if conscious. Medical emergency — call for help."
     },
     "maternal_health": {
-      "pregnancy_care": "Attend all antenatal checkups — minimum 4 visits. Take iron-folic acid tablets daily. Eat nutritious food. Avoid heavy work. Sleep 8 hours. Deliver in hospital.",
-      "danger_signs": "Go to hospital immediately if: heavy bleeding, severe headache, blurred vision, fits, baby not moving, water breaks before 37 weeks, or high fever.",
-      "newborn_care": "Breastfeed within 1 hour of birth. Breastfeed exclusively for 6 months. Keep baby warm. Immunize as per schedule. Weigh baby monthly."
+      "pregnancy_care": "Minimum 4 antenatal checkups. Iron-folic acid tablets daily from first trimester. Nutritious food. No alcohol or tobacco. Deliver in health facility with skilled attendant.",
+      "danger_signs": "Go to hospital immediately: heavy bleeding, severe headache, blurred vision, fits, baby not moving 12 hours, water breaks before 37 weeks, high fever.",
+      "newborn_care": "Breastfeed within 1 hour of birth. Exclusive breastfeeding 6 months. Keep baby warm. Immunize per national schedule. Weigh monthly.",
+      "family_planning": "Space births 2-3 years apart for better health. Options: condoms, pills, injections, IUD, implants. All safe and effective. Discuss with health worker."
     },
     "mental_health": {
-      "stress": "Talk to trusted family member or friend. Take breaks from work. Exercise daily. Practice deep breathing. Avoid alcohol. Sleep well. Seek help if feeling hopeless.",
-      "depression": "Feeling sad for more than 2 weeks, loss of interest, sleep problems, fatigue — these may be depression. Talk to doctor. It is treatable. You are not alone.",
-      "anxiety": "Worry, restlessness, fast heartbeat, difficulty sleeping — may be anxiety. Deep breathing helps. Avoid caffeine. Exercise. Talk to doctor if severe."
+      "stress": "Talk to trusted person. Take breaks. Exercise daily — 20 minutes walking helps. Deep breathing. Avoid alcohol. Sleep 7-8 hours.",
+      "depression": "Sadness, hopelessness, loss of interest for over 2 weeks may be depression. Real illness, not weakness. Talk to doctor. Treatable.",
+      "grief": "Grief after loss is normal. Allow yourself to feel sad. Accept support. Seek help if overwhelming.",
+      "substance_abuse": "Alcohol and drug abuse harm health and family. Help is available — talk to health worker or community leader."
     }
   },
   "safety": {
     "fraud_awareness": {
-      "otp_scam": "DANGER: Never share OTP with anyone on phone or message. Banks, government, and police NEVER ask for OTP. If someone asks for OTP — it is 100% a scam. Hang up immediately and call your bank.",
-      "lottery_scam": "You cannot win a lottery you did not enter. Do not send money to claim prize. Do not share bank details. This is always a scam. Block the number.",
-      "fake_call_scam": "Banks never call asking for full card number, CVV, or PIN. Do not share these details on phone. Hang up and call your bank directly on the number on your card.",
-      "link_scam": "Do not click links in unknown messages or WhatsApp. They can steal your information and money. Delete suspicious messages. Never enter bank details on unknown websites.",
-      "impersonation": "Scammers pretend to be police, bank officers, or government officials. Verify caller identity before sharing information. Call back on official number. Real officials never demand money on phone.",
-      "upi_scam": "Never scan QR code to RECEIVE money — scanning sends money, not receives. Do not enter UPI PIN to receive payment. If someone says scan to get money, it is a scam.",
-      "job_scam": "Fake job offers ask for registration fee or security deposit. Legitimate companies never ask for money to give job. Verify company on official website before paying anything.",
-      "investment_scam": "Promises of very high returns (50-100%) are always scams. Do not invest in unknown apps or schemes. Verify with SEBI registered advisors only."
+      "otp_scam": "CRITICAL: Never share OTP with anyone — not bank, not police, not government. OTP is only for YOU to enter. Anyone asking for OTP is a scammer. Hang up immediately.",
+      "phone_scam": "Scammers pretend to be bank officers, police, tax officials, lottery companies. Real officials never demand money or personal information on phone. Hang up and call official number.",
+      "mobile_money_scam": "Never send money to receive money — always a scam. Never share mobile money PIN. Verify recipient before sending. Small amount to unlock large amount is always a scam.",
+      "fake_job_scam": "Legitimate employers never ask for money to give you a job. Fake jobs ask for registration fee or deposit. Verify company independently before paying anything.",
+      "romance_scam": "Online strangers who quickly profess love then ask for money are scammers. Never send money to someone you have not met in person.",
+      "investment_scam": "Promises of very high returns (50-100% monthly) are always scams. Only invest through regulated financial institutions.",
+      "impersonation": "Scammers pretend to be government officials or family in trouble. Verify identity independently. Real officials never demand immediate payment.",
+      "phishing": "Do not click links in unknown messages or emails. Type website addresses directly. Never enter passwords on unfamiliar websites."
     },
     "emergency_numbers": {
-      "police": "100 — For crime, theft, or danger",
-      "ambulance": "108 — For medical emergency",
-      "fire": "101 — For fire emergency",
-      "women_helpline": "1091 — For women in distress",
-      "child_helpline": "1098 — For child in need",
-      "disaster": "108 — For natural disaster help",
-      "senior_citizen": "14567 — Elder helpline",
-      "cyber_crime": "1930 — For online fraud and cyber crime",
-      "kisan_call": "1551 — Free agriculture advice for farmers",
-      "health_helpline": "104 — Free health advice"
+      "global": "112 — International emergency number, works in most countries worldwide",
+      "india": "Police: 100 | Ambulance: 108 | Fire: 101 | Women: 1091 | Cyber Crime: 1930 | Kisan: 1551",
+      "kenya": "Police: 999 or 112 | Ambulance: 999 | Fire: 999 | Gender Violence: 1195",
+      "nigeria": "Police: 199 | Ambulance: 199 | Fire: 199 | NEMA Disaster: 0800-CALLNEMA",
+      "south_africa": "Police: 10111 | Ambulance: 10177 | Emergency: 112 | Gender Violence: 0800-428-428",
+      "ghana": "Police: 191 | Ambulance: 193 | Fire: 192 | Emergency: 112",
+      "tanzania": "Police: 112 | Ambulance: 112 | Fire: 112",
+      "ethiopia": "Police: 991 | Ambulance: 907 | Fire: 939",
+      "bangladesh": "Police: 999 | Ambulance: 999 | Fire: 999",
+      "pakistan": "Police: 15 | Ambulance: 1122 | Fire: 16",
+      "indonesia": "Police: 110 | Ambulance: 118 | Fire: 113",
+      "philippines": "Emergency: 911 | Police: 117",
+      "brazil": "Police: 190 | Ambulance: 192 | Fire: 193",
+      "mexico": "Emergency: 911",
+      "egypt": "Police: 122 | Ambulance: 123 | Fire: 180",
+      "morocco": "Police: 19 | Ambulance: 15 | Fire: 15"
     },
     "home_safety": {
-      "fire_prevention": "Do not leave cooking unattended. Keep matchboxes away from children. Check gas connections regularly. Have fire extinguisher. Know escape route from home.",
-      "electrical_safety": "Do not touch switches with wet hands. Do not overload sockets. Check wiring regularly. Turn off appliances when not in use. Use ISI marked products only.",
-      "water_safety": "Boil drinking water or use filter. Store water in clean covered containers. Clean water tanks every 6 months. Do not let water stagnate — breeds mosquitoes.",
-      "lpg_safety": "Check gas pipe connections regularly. Do not use gas if you smell leakage — open windows, do not switch on lights, call gas agency. Keep cylinder upright. Do not store near heat."
+      "fire_prevention": "Never leave cooking unattended. Keep matches away from children. Check gas connections regularly. Have fire extinguisher or bucket of sand. Know escape route. Practice fire drill.",
+      "electrical_safety": "Never touch switches with wet hands. Do not overload sockets. Check wiring for damage. Turn off appliances when not in use.",
+      "water_safety": "Boil drinking water or use filter or purification tablets. Store in clean covered containers. Do not let water stagnate — breeds mosquitoes.",
+      "child_safety": "Keep medicines and cleaning products out of children reach. Never leave young children alone near water. Teach children about stranger danger.",
+      "natural_disaster": "Know local disaster risks. Have emergency kit: water, food, medicines, documents, torch, radio. Know evacuation routes. Follow official warnings."
     },
-    "road_safety": {
-      "general": "Wear helmet on two-wheeler — it saves life. Wear seatbelt in car. Do not use phone while driving. Follow traffic signals. Do not drink and drive.",
-      "accident": "Call 108 for ambulance. Do not move injured person unless in danger. Keep them warm. Stop bleeding with pressure. Stay with them until help arrives."
+    "water_sanitation": {
+      "safe_water": "Boil water 1 minute to kill germs. Use purification tablets if available. Store in clean covered container.",
+      "handwashing": "Wash hands with soap 20 seconds: before eating, after toilet, after handling animals, after coughing. This single action prevents many diseases.",
+      "sanitation": "Use toilet or latrine. Dispose of child feces safely. Keep toilet clean. Wash hands after toilet."
+    }
+  },
+  "livelihoods": {
+    "financial_inclusion": {
+      "mobile_banking": "Mobile banking lets you save, send, receive money safely without going to bank. Register with phone number and ID. Keep PIN secret. Check balance regularly.",
+      "savings": "Save small amounts regularly — even small savings add up. Use formal savings account or mobile money — safer than cash at home. Save for emergencies and farming inputs.",
+      "microfinance": "Small loans from microfinance institutions help start or grow small business. Borrow only what you can repay. Understand interest rate before borrowing.",
+      "insurance": "Agricultural insurance protects against crop failure. Health insurance covers medical costs. Ask local government or NGO about available schemes."
+    },
+    "small_business": {
+      "starting": "Start with what you know and have. Start small and grow. Keep records of income and expenses. Separate business and personal money.",
+      "marketing": "Know your customers. Price fairly — cover costs and make profit. Use mobile phone to reach more customers. Join farmer or trader groups for better prices.",
+      "record_keeping": "Write down all income and expenses daily. Shows if business is profitable. Required for loans. Use simple notebook or phone app."
+    },
+    "rights": {
+      "land_rights": "Know your land rights. Register land in your name. Keep land documents safe. Women have equal right to land. Seek legal help if land is taken unfairly.",
+      "labor_rights": "Workers have right to fair wages, safe conditions, and rest. Child labor is illegal. Forced labor is illegal. Report violations to labor department.",
+      "consumer_rights": "Right to safe products, accurate information, and fair prices. Report fraud to consumer protection authority. Keep receipts."
+    }
+  },
+  "climate": {
+    "adaptation": {
+      "drought": "Drought-tolerant crops: sorghum, millet, cassava, cowpea, groundnut. Conserve water with mulching. Harvest rainwater. Diversify crops and income.",
+      "floods": "Avoid farming in flood-prone areas. Build raised beds. Plant flood-tolerant varieties. Have emergency plan. Keep documents in waterproof container.",
+      "changing_seasons": "Climate change makes seasons unpredictable. Keep records of planting dates. Connect with agriculture extension for updated advice. Diversify crops."
+    },
+    "environment": {
+      "deforestation": "Trees prevent soil erosion and regulate water. Plant trees on farm boundaries. Use fuel-efficient cookstoves to reduce firewood use.",
+      "soil_conservation": "Prevent erosion with cover crops, terracing on slopes, and mulching. Healthy soil grows better crops. Do not burn crop residues."
     }
   },
   "daily_living": {
-    "time_management": {
-      "morning_routine": "Wake up early. Drink water. Exercise or walk 30 minutes. Eat healthy breakfast. Plan your day.",
-      "medication_schedule": "Take medicines at same time daily. Keep medicine box organized. Set reminders. Do not skip doses. Keep record of medicines.",
-      "meal_times": "Breakfast: 7-9 AM. Lunch: 12-2 PM. Dinner: 7-9 PM. Eat at regular times. Do not skip meals. Eat slowly and chew well."
+    "nutrition": {
+      "balanced_diet": "Eat from all food groups daily: cereals and roots for energy, legumes and meat for protein, vegetables and fruits for vitamins. Variety ensures all nutrients.",
+      "child_nutrition": "Breastfeed exclusively 6 months. From 6 months add mashed vegetables, legumes, eggs. 5 small meals daily. Avoid sugary drinks.",
+      "food_safety": "Cook food thoroughly. Eat freshly cooked food. Store leftovers covered in cool place. Wash vegetables and fruits. Avoid food that smells bad."
+    },
+    "hygiene": {
+      "personal": "Bathe daily. Wash hands with soap frequently. Brush teeth twice daily. Cut nails regularly. Wear clean clothes. These habits prevent many diseases.",
+      "home": "Keep home clean and well-ventilated. Dispose of waste properly. Keep animals away from food preparation area."
     },
     "communication": {
-      "making_calls": "Speak clearly and slowly. State your name first. Explain purpose of call. Listen carefully to response. Write down important information.",
-      "receiving_calls": "Answer politely. Verify caller identity. Do not share personal information to unknown callers. Ask to call back if unsure. It is okay to say no.",
-      "messages": "Keep messages short and clear. Read carefully before sending. Do not share sensitive information via message. Beware of forwarded messages — verify before sharing."
+      "making_calls": "Speak clearly and slowly. State your name first. Explain purpose of call. Listen carefully. Write down important information.",
+      "receiving_calls": "Answer politely. Verify caller identity. Do not share personal information to unknown callers. It is okay to say no and hang up.",
+      "using_smartphone": "Keep phone charged. Lock with PIN. Do not share PIN. Download apps only from official stores. Be careful what you share on social media."
     },
     "government_schemes": {
-      "pm_kisan": "PM-KISAN gives Rs 6000 per year to farmers in 3 installments. Register at pmkisan.gov.in or nearest CSC center. Need Aadhaar, bank account, land records.",
-      "ayushman_bharat": "Ayushman Bharat gives free health insurance up to Rs 5 lakh per year. Check eligibility at pmjay.gov.in. Show card at empanelled hospitals for free treatment.",
-      "ration_card": "Ration card gives subsidized food grains. Apply at nearest ration office. Need Aadhaar, address proof, income certificate. Check status at your state food department website."
+      "india_pm_kisan": "PM-KISAN: Rs 6000 per year for farmers in 3 installments. Register at pmkisan.gov.in or nearest CSC. Need Aadhaar, bank account, land records.",
+      "india_ayushman": "Ayushman Bharat: free health insurance up to Rs 5 lakh per year. Check eligibility at pmjay.gov.in. Show card at empanelled hospitals.",
+      "africa_social_protection": "Many African countries have social cash transfer programs for poor households. Ask local government office or NGO about eligibility and registration.",
+      "global_vaccination": "Vaccines are free at government health centers in most countries. Protect children with: BCG, polio, DPT, measles, hepatitis B vaccines. Keep vaccination card safe."
     }
   }
 }

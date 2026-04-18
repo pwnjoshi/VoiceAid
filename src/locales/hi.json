@@ -57,7 +57,9 @@
     "agriculture": "कृषि",
     "health": "स्वास्थ्य",
     "safety": "सुरक्षा",
-    "general": "सामान्य"
+    "general": "सामान्य",
+    "livelihoods": "आजीविका",
+    "climate": "जलवायु"
   },
   "status": {
     "online": "ऑनलाइन",

@@ -1,0 +1,29 @@
+{
+  "app": { "name": "VoiceAid", "tagline": "Tu asistente de voz" },
+  "home": {
+    "title": "VoiceAid", "subtitle": "Toca para hablar",
+    "listening": "Escuchando...", "processing": "Procesando...", "speaking": "Hablando...",
+    "offline": "Modo sin conexión", "online": "Modo en línea",
+    "tapToSpeak": "Toca el botón para hablar", "tapAgain": "Toca de nuevo cuando termines",
+    "helpText": "Pregunta sobre agricultura, salud o seguridad"
+  },
+  "settings": {
+    "title": "Configuración", "language": "Idioma", "selectLanguage": "Seleccionar idioma",
+    "voiceSpeed": "Velocidad de voz", "slow": "Lento", "normal": "Normal", "fast": "Rápido",
+    "offlineMode": "Modo sin conexión", "offlineModeDesc": "Usar IA del dispositivo sin internet",
+    "batterySaver": "Ahorro de batería", "batterySaverDesc": "Reducir consumo de energía",
+    "notifications": "Notificaciones", "notificationsDesc": "Activar notificaciones de recordatorio",
+    "about": "Acerca de", "version": "Versión", "caretaker": "Configuración del cuidador",
+    "caretakerPhone": "Teléfono del cuidador", "save": "Guardar", "cancel": "Cancelar"
+  },
+  "reminders": {
+    "title": "Recordatorios", "addReminder": "Agregar recordatorio", "medicine": "Medicina",
+    "meal": "Comida", "custom": "Personalizado", "time": "Hora", "frequency": "Frecuencia",
+    "daily": "Diario", "weekly": "Semanal", "once": "Una vez",
+    "active": "Activo", "inactive": "Inactivo", "noReminders": "Sin recordatorios",
+    "delete": "Eliminar", "edit": "Editar"
+  },
+  "knowledge": { "agriculture": "Agricultura", "health": "Salud", "safety": "Seguridad", "general": "General" },
+  "status": { "online": "En línea", "offline": "Sin conexión", "battery": "Batería", "lowBattery": "Batería baja" },
+  "errors": { "micPermission": "Permiso de micrófono denegado", "networkError": "Error de red", "processingError": "Error al procesar solicitud", "tryAgain": "Por favor intenta de nuevo" }
+}

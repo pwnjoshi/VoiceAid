@@ -1,0 +1,29 @@
+{
+  "app": { "name": "فويس إيد", "tagline": "مساعدك الصوتي" },
+  "home": {
+    "title": "فويس إيد", "subtitle": "اضغط للتحدث",
+    "listening": "أستمع...", "processing": "جاري المعالجة...", "speaking": "أتحدث...",
+    "offline": "وضع عدم الاتصال", "online": "وضع الاتصال",
+    "tapToSpeak": "اضغط الزر للتحدث", "tapAgain": "اضغط مرة أخرى عند الانتهاء",
+    "helpText": "اسأل عن الزراعة والصحة والسلامة"
+  },
+  "settings": {
+    "title": "الإعدادات", "language": "اللغة", "selectLanguage": "اختر اللغة",
+    "voiceSpeed": "سرعة الصوت", "slow": "بطيء", "normal": "عادي", "fast": "سريع",
+    "offlineMode": "وضع عدم الاتصال", "offlineModeDesc": "استخدم الذكاء الاصطناعي بدون إنترنت",
+    "batterySaver": "توفير البطارية", "batterySaverDesc": "تقليل استهلاك الطاقة",
+    "notifications": "الإشعارات", "notificationsDesc": "تفعيل إشعارات التذكير",
+    "about": "حول", "version": "الإصدار", "caretaker": "إعدادات مقدم الرعاية",
+    "caretakerPhone": "رقم هاتف مقدم الرعاية", "save": "حفظ", "cancel": "إلغاء"
+  },
+  "reminders": {
+    "title": "التذكيرات", "addReminder": "إضافة تذكير", "medicine": "دواء",
+    "meal": "وجبة", "custom": "مخصص", "time": "الوقت", "frequency": "التكرار",
+    "daily": "يومي", "weekly": "أسبوعي", "once": "مرة واحدة",
+    "active": "نشط", "inactive": "غير نشط", "noReminders": "لا توجد تذكيرات",
+    "delete": "حذف", "edit": "تعديل"
+  },
+  "knowledge": { "agriculture": "الزراعة", "health": "الصحة", "safety": "السلامة", "general": "عام" },
+  "status": { "online": "متصل", "offline": "غير متصل", "battery": "البطارية", "lowBattery": "بطارية منخفضة" },
+  "errors": { "micPermission": "تم رفض إذن الميكروفون", "networkError": "حدث خطأ في الشبكة", "processingError": "فشل في معالجة الطلب", "tryAgain": "يرجى المحاولة مرة أخرى" }
+}

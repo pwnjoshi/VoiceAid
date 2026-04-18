@@ -137,7 +137,79 @@ class EnhancedOfflineService {
       indexContent(
         `daily_living.government_schemes.${scheme}`,
         content,
-        [scheme, 'government', 'scheme', 'benefit', 'subsidy', 'pm', 'kisan']
+        [scheme, 'government', 'scheme', 'benefit', 'subsidy', 'pm', 'kisan', 'ayushman', 'vaccination']
+      );
+    });
+
+    // Index livelihoods
+    const livelihoods = this.knowledge.livelihoods || {};
+    Object.entries(livelihoods).forEach(([section, data]) => {
+      if (!data || typeof data !== 'object') return;
+      Object.entries(data).forEach(([topic, content]) => {
+        if (typeof content !== 'string') return;
+        indexContent(
+          `livelihoods.${section}.${topic}`,
+          content,
+          [topic, section, 'money', 'business', 'savings', 'loan', 'rights', 'work', 'income']
+        );
+      });
+    });
+
+    // Index climate
+    const climate = this.knowledge.climate || {};
+    Object.entries(climate).forEach(([section, data]) => {
+      if (!data || typeof data !== 'object') return;
+      Object.entries(data).forEach(([topic, content]) => {
+        if (typeof content !== 'string') return;
+        indexContent(
+          `climate.${section}.${topic}`,
+          content,
+          [topic, section, 'climate', 'drought', 'flood', 'weather', 'environment', 'soil']
+        );
+      });
+    });
+
+    // Index daily living nutrition and hygiene
+    const nutrition = this.knowledge.daily_living?.nutrition || {};
+    Object.entries(nutrition).forEach(([topic, content]) => {
+      if (typeof content !== 'string') return;
+      indexContent(
+        `daily_living.nutrition.${topic}`,
+        content,
+        [topic, 'food', 'nutrition', 'diet', 'eat', 'child', 'baby', 'breastfeed']
+      );
+    });
+
+    // Index water sanitation
+    const waterSan = this.knowledge.safety?.water_sanitation || {};
+    Object.entries(waterSan).forEach(([topic, content]) => {
+      if (typeof content !== 'string') return;
+      indexContent(
+        `safety.water_sanitation.${topic}`,
+        content,
+        [topic, 'water', 'sanitation', 'hygiene', 'handwashing', 'toilet', 'clean']
+      );
+    });
+
+    // Index maternal health
+    const maternal = this.knowledge.health?.maternal_health || {};
+    Object.entries(maternal).forEach(([topic, content]) => {
+      if (typeof content !== 'string') return;
+      indexContent(
+        `health.maternal_health.${topic}`,
+        content,
+        [topic, 'pregnancy', 'maternal', 'baby', 'newborn', 'breastfeed', 'mother', 'birth', 'family planning']
+      );
+    });
+
+    // Index mental health
+    const mental = this.knowledge.health?.mental_health || {};
+    Object.entries(mental).forEach(([topic, content]) => {
+      if (typeof content !== 'string') return;
+      indexContent(
+        `health.mental_health.${topic}`,
+        content,
+        [topic, 'mental', 'stress', 'depression', 'anxiety', 'grief', 'alcohol', 'drugs']
       );
     });
 
@@ -208,11 +280,13 @@ class EnhancedOfflineService {
   getFallbackResponse(query) {
     const category = this.detectCategory(query);
     const fallbacks = {
-      agriculture: "I can help with farming questions. Ask me about planting, pests, fertilizers, or harvesting for crops like rice, wheat, corn, cotton, sugarcane, tomato, potato, or onion.",
-      health: "I can help with health questions. Ask me about fever, cough, diabetes, blood pressure, diarrhea, malaria, pregnancy care, or medicines like paracetamol and ORS.",
-      safety: "I can help with safety information. Ask me about OTP scams, UPI fraud, emergency numbers (112, 108, 100, 1930), or home safety tips.",
-      government: "I can tell you about government schemes like PM-KISAN (Rs 6000/year for farmers), Ayushman Bharat (free health insurance), or ration card benefits.",
-      general: "I am here to help! You can ask me about:\n• Farming and crops\n• Health and medicines\n• Safety and fraud awareness\n• Government schemes\n• Emergency numbers",
+      agriculture: "I can help with farming. Ask about rice, wheat, corn, cassava, sorghum, banana, groundnut, tomato, potato, or beans — planting, pests, fertilizer, harvest, or water.",
+      health: "I can help with health. Ask about fever, diarrhea, malaria, tuberculosis, cholera, diabetes, blood pressure, HIV, malnutrition, pregnancy, or medicines like paracetamol and ORS.",
+      safety: "I can help with safety. Ask about OTP scams, mobile money fraud, fake jobs, phishing, emergency numbers for your country, or home safety.",
+      government: "I can tell you about government programs — PM-KISAN, Ayushman Bharat, vaccination programs, and social protection schemes.",
+      livelihoods: "I can help with livelihoods. Ask about mobile banking, savings, microfinance loans, starting a business, land rights, or labor rights.",
+      climate: "I can help with climate adaptation. Ask about drought-tolerant crops, flood preparation, soil conservation, or deforestation.",
+      general: "I am here to help! Ask me about:\n• Farming and crops (10 crops covered)\n• Health and medicines (10 ailments)\n• Safety and fraud awareness\n• Livelihoods and finance\n• Climate adaptation\n• Emergency numbers for 16 countries",
     };
     return {
       success: true,
@@ -227,17 +301,23 @@ class EnhancedOfflineService {
    */
   detectCategory(query) {
     const lower = query.toLowerCase();
-    if (/crop|farm|plant|pest|soil|fertilizer|harvest|rice|wheat|corn|cotton|sugarcane|tomato|potato|onion|irrigation/.test(lower)) {
+    if (/crop|farm|plant|pest|soil|fertilizer|harvest|rice|wheat|corn|cassava|sorghum|banana|groundnut|tomato|potato|beans|irrigation|drought|flood/.test(lower)) {
       return 'agriculture';
     }
-    if (/fever|pain|sick|medicine|doctor|health|cough|cold|headache|diabetes|blood pressure|diarrhea|malaria|pregnancy|mental/.test(lower)) {
+    if (/fever|pain|sick|medicine|doctor|health|cough|cold|headache|diabetes|blood pressure|diarrhea|malaria|tuberculosis|tb|cholera|hiv|aids|malnutrition|pregnancy|mental|stress|depression/.test(lower)) {
       return 'health';
     }
-    if (/fraud|scam|otp|safety|emergency|police|fire|upi|bank|password|pin|cyber/.test(lower)) {
+    if (/fraud|scam|otp|safety|emergency|police|fire|upi|bank|password|pin|cyber|phishing|mobile money/.test(lower)) {
       return 'safety';
     }
-    if (/scheme|pm kisan|ayushman|ration|government|subsidy/.test(lower)) {
+    if (/scheme|pm kisan|ayushman|ration|government|subsidy|vaccination|vaccine/.test(lower)) {
       return 'government';
+    }
+    if (/money|savings|loan|business|income|rights|land|labor|insurance|microfinance/.test(lower)) {
+      return 'livelihoods';
+    }
+    if (/climate|drought|flood|weather|environment|deforestation|soil erosion/.test(lower)) {
+      return 'climate';
     }
     return 'general';
   }

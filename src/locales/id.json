@@ -1,0 +1,29 @@
+{
+  "app": { "name": "VoiceAid", "tagline": "Asisten suara Anda" },
+  "home": {
+    "title": "VoiceAid", "subtitle": "Ketuk untuk berbicara",
+    "listening": "Mendengarkan...", "processing": "Memproses...", "speaking": "Berbicara...",
+    "offline": "Mode offline", "online": "Mode online",
+    "tapToSpeak": "Ketuk tombol untuk berbicara", "tapAgain": "Ketuk lagi setelah selesai",
+    "helpText": "Tanyakan tentang pertanian, kesehatan, atau keamanan"
+  },
+  "settings": {
+    "title": "Pengaturan", "language": "Bahasa", "selectLanguage": "Pilih bahasa",
+    "voiceSpeed": "Kecepatan suara", "slow": "Lambat", "normal": "Normal", "fast": "Cepat",
+    "offlineMode": "Mode offline", "offlineModeDesc": "Gunakan AI perangkat tanpa internet",
+    "batterySaver": "Hemat baterai", "batterySaverDesc": "Kurangi konsumsi daya",
+    "notifications": "Notifikasi", "notificationsDesc": "Aktifkan notifikasi pengingat",
+    "about": "Tentang", "version": "Versi", "caretaker": "Pengaturan pengasuh",
+    "caretakerPhone": "Telepon pengasuh", "save": "Simpan", "cancel": "Batal"
+  },
+  "reminders": {
+    "title": "Pengingat", "addReminder": "Tambah pengingat", "medicine": "Obat",
+    "meal": "Makan", "custom": "Kustom", "time": "Waktu", "frequency": "Frekuensi",
+    "daily": "Harian", "weekly": "Mingguan", "once": "Sekali",
+    "active": "Aktif", "inactive": "Tidak aktif", "noReminders": "Tidak ada pengingat",
+    "delete": "Hapus", "edit": "Edit"
+  },
+  "knowledge": { "agriculture": "Pertanian", "health": "Kesehatan", "safety": "Keamanan", "general": "Umum" },
+  "status": { "online": "Online", "offline": "Offline", "battery": "Baterai", "lowBattery": "Baterai rendah" },
+  "errors": { "micPermission": "Izin mikrofon ditolak", "networkError": "Terjadi kesalahan jaringan", "processingError": "Gagal memproses permintaan", "tryAgain": "Silakan coba lagi" }
+}

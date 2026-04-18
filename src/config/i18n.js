@@ -9,6 +9,11 @@ import mr from '../locales/mr.json';
 import ta from '../locales/ta.json';
 import bn from '../locales/bn.json';
 import te from '../locales/te.json';
+import sw from '../locales/sw.json';
+import ar from '../locales/ar.json';
+import es from '../locales/es.json';
+import fr from '../locales/fr.json';
+import id from '../locales/id.json';
 
 const LANGUAGE_KEY = '@voiceaid:language';
 
@@ -19,13 +24,16 @@ const resources = {
   ta: { translation: ta },
   bn: { translation: bn },
   te: { translation: te },
+  sw: { translation: sw },
+  ar: { translation: ar },
+  es: { translation: es },
+  fr: { translation: fr },
+  id: { translation: id },
 };
 
-// Detect device language synchronously for initial render
 const deviceLang = Localization.locale?.split('-')[0] || 'en';
 const initialLang = resources[deviceLang] ? deviceLang : 'en';
 
-// Initialize synchronously so useTranslation() works on first render
 i18n
   .use(initReactI18next)
   .init({
@@ -36,7 +44,6 @@ i18n
     react: { useSuspense: false },
   });
 
-// Then async-load the saved preference and switch if needed
 AsyncStorage.getItem(LANGUAGE_KEY).then((saved) => {
   if (saved && saved !== i18n.language && resources[saved]) {
     i18n.changeLanguage(saved);
@@ -55,12 +62,17 @@ export const changeLanguage = async (language) => {
 export const getCurrentLanguage = () => i18n.language;
 
 export const getAvailableLanguages = () => [
-  { code: 'en', name: 'English',   nativeName: 'English' },
-  { code: 'hi', name: 'Hindi',     nativeName: 'हिंदी' },
-  { code: 'mr', name: 'Marathi',   nativeName: 'मराठी' },
-  { code: 'ta', name: 'Tamil',     nativeName: 'தமிழ்' },
-  { code: 'bn', name: 'Bengali',   nativeName: 'বাংলা' },
-  { code: 'te', name: 'Telugu',    nativeName: 'తెలుగు' },
+  { code: 'en', name: 'English',    nativeName: 'English',    region: 'Global' },
+  { code: 'hi', name: 'Hindi',      nativeName: 'हिंदी',       region: 'South Asia' },
+  { code: 'mr', name: 'Marathi',    nativeName: 'मराठी',       region: 'South Asia' },
+  { code: 'ta', name: 'Tamil',      nativeName: 'தமிழ்',       region: 'South Asia' },
+  { code: 'bn', name: 'Bengali',    nativeName: 'বাংলা',       region: 'South Asia' },
+  { code: 'te', name: 'Telugu',     nativeName: 'తెలుగు',      region: 'South Asia' },
+  { code: 'sw', name: 'Swahili',    nativeName: 'Kiswahili',   region: 'Africa' },
+  { code: 'ar', name: 'Arabic',     nativeName: 'العربية',     region: 'Middle East & Africa' },
+  { code: 'es', name: 'Spanish',    nativeName: 'Español',     region: 'Latin America' },
+  { code: 'fr', name: 'French',     nativeName: 'Français',    region: 'Africa & Global' },
+  { code: 'id', name: 'Indonesian', nativeName: 'Bahasa Indonesia', region: 'SE Asia' },
 ];
 
 export default i18n;

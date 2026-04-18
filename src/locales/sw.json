@@ -1,0 +1,29 @@
+{
+  "app": { "name": "VoiceAid", "tagline": "Msaidizi wako wa sauti" },
+  "home": {
+    "title": "VoiceAid", "subtitle": "Gusa ili kuzungumza",
+    "listening": "Sikiliza...", "processing": "Inashughulikia...", "speaking": "Inazungumza...",
+    "offline": "Hali ya nje ya mtandao", "online": "Hali ya mtandaoni",
+    "tapToSpeak": "Gusa kitufe kuzungumza", "tapAgain": "Gusa tena unapomaliza",
+    "helpText": "Uliza kuhusu kilimo, afya, usalama"
+  },
+  "settings": {
+    "title": "Mipangilio", "language": "Lugha", "selectLanguage": "Chagua lugha",
+    "voiceSpeed": "Kasi ya sauti", "slow": "Polepole", "normal": "Kawaida", "fast": "Haraka",
+    "offlineMode": "Hali ya nje ya mtandao", "offlineModeDesc": "Tumia AI ya kifaa bila intaneti",
+    "batterySaver": "Hifadhi betri", "batterySaverDesc": "Punguza matumizi ya nguvu",
+    "notifications": "Arifa", "notificationsDesc": "Wezesha arifa za ukumbusho",
+    "about": "Kuhusu", "version": "Toleo", "caretaker": "Mipangilio ya mtunzaji",
+    "caretakerPhone": "Nambari ya simu ya mtunzaji", "save": "Hifadhi", "cancel": "Ghairi"
+  },
+  "reminders": {
+    "title": "Vikumbusho", "addReminder": "Ongeza ukumbusho", "medicine": "Dawa",
+    "meal": "Chakula", "custom": "Maalum", "time": "Wakati", "frequency": "Mara ngapi",
+    "daily": "Kila siku", "weekly": "Kila wiki", "once": "Mara moja",
+    "active": "Inafanya kazi", "inactive": "Haifanyi kazi", "noReminders": "Hakuna vikumbusho",
+    "delete": "Futa", "edit": "Hariri"
+  },
+  "knowledge": { "agriculture": "Kilimo", "health": "Afya", "safety": "Usalama", "general": "Jumla" },
+  "status": { "online": "Mtandaoni", "offline": "Nje ya mtandao", "battery": "Betri", "lowBattery": "Betri chini" },
+  "errors": { "micPermission": "Ruhusa ya maikrofoni imekataliwa", "networkError": "Hitilafu ya mtandao", "processingError": "Imeshindwa kushughulikia ombi", "tryAgain": "Tafadhali jaribu tena" }
+}

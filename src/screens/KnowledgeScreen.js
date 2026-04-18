@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   View, Text, StyleSheet, TextInput, TouchableOpacity,
-  ScrollView, ActivityIndicator, Alert,
+  ScrollView, ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -15,36 +15,49 @@ const CATEGORIES = [
     id: 'agriculture',
     icon: 'leaf',
     color: '#059669',
+    bg: '#ECFDF5',
     queries: [
-      'Rice planting tips', 'Pest control for cotton',
-      'Wheat fertilizer', 'Tomato diseases',
-      'Potato harvest', 'Sugarcane water',
+      'Rice planting tips', 'Cassava harvest',
+      'Pest control corn', 'Banana diseases',
+      'Groundnut fertilizer', 'Sorghum drought',
     ],
   },
   {
     id: 'health',
     icon: 'medical',
     color: '#DC2626',
+    bg: '#FEF2F2',
     queries: [
-      'Fever treatment', 'Diabetes management',
-      'Blood pressure control', 'Diarrhea ORS',
-      'Malaria prevention', 'Pregnancy care',
+      'Fever treatment', 'Diarrhea ORS',
+      'Malaria prevention', 'Tuberculosis symptoms',
+      'Diabetes management', 'Malnutrition children',
     ],
   },
   {
     id: 'safety',
     icon: 'shield-checkmark',
     color: '#2563EB',
+    bg: '#EFF6FF',
     queries: [
-      'OTP scam alert', 'UPI fraud warning',
-      'Emergency numbers', 'Job scam awareness',
-      'Investment fraud', 'Cyber crime helpline',
+      'OTP scam warning', 'Mobile money fraud',
+      'Emergency numbers', 'Fake job scam',
+      'Investment fraud', 'Phishing links',
+    ],
+  },
+  {
+    id: 'livelihoods',
+    icon: 'cash',
+    color: '#D97706',
+    bg: '#FFFBEB',
+    queries: [
+      'Mobile banking safety', 'How to save money',
+      'Start small business', 'Land rights',
+      'Microfinance loans', 'Record keeping',
     ],
   },
 ];
 
-// Proactive OTP scam warning — shown when safety tab is active
-const OTP_WARNING_KEYWORDS = ['otp', 'scam', 'fraud', 'upi', 'bank', 'password', 'pin'];
+const SCAM_KEYWORDS = ['otp', 'scam', 'fraud', 'upi', 'bank', 'password', 'pin', 'mobile money', 'phishing'];
 
 export default function KnowledgeScreen() {
   const { t } = useTranslation();
@@ -60,13 +73,12 @@ export default function KnowledgeScreen() {
     setLoading(true);
     setResult(null);
 
-    // Proactive voice warning for scam-related queries
+    // Proactive voice warning for scam queries
     const lower = text.toLowerCase();
-    const isScamQuery = OTP_WARNING_KEYWORDS.some(kw => lower.includes(kw));
-    if (isScamQuery) {
+    if (SCAM_KEYWORDS.some(kw => lower.includes(kw))) {
       Speech.speak(
-        'Warning! Never share your OTP, PIN, or password with anyone. Banks never ask for this information.',
-        { rate: 0.85, language: 'en-US' }
+        'Warning. Never share your OTP, PIN, or password with anyone. Banks and government never ask for this.',
+        { rate: 0.85 }
       );
     }
 
@@ -100,39 +112,36 @@ export default function KnowledgeScreen() {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
 
         <View style={styles.header}>
-          <Text style={styles.title}>{t('knowledge.agriculture') === 'Agriculture' ? 'Knowledge Base' : 'ज्ञान आधार'}</Text>
-          <Text style={styles.subtitle}>Ask anything — works offline</Text>
+          <Text style={styles.title}>Knowledge Base</Text>
+          <Text style={styles.subtitle}>Global knowledge — 100% offline</Text>
         </View>
 
-        {/* OTP Scam Banner — always visible on safety tab */}
+        {/* Scam alert banner on safety tab */}
         {activeCategory === 'safety' && (
           <TouchableOpacity
             style={styles.scamBanner}
-            onPress={() => {
-              Speech.speak(
-                'Important safety warning. Never share your OTP, bank PIN, or password with anyone on phone or message. This is always a scam. Hang up immediately.',
-                { rate: 0.85 }
-              );
-            }}
+            onPress={() => Speech.speak(
+              'Important safety warning. Never share your OTP, bank PIN, or password with anyone on phone or message. This is always a scam. Hang up immediately and call your bank.',
+              { rate: 0.82 }
+            )}
           >
-            <Ionicons name="warning" size={20} color="#fff" />
-            <Text style={styles.scamBannerText}>
-              Never share OTP or PIN — tap to hear warning
-            </Text>
-            <Ionicons name="volume-high" size={18} color="#fff" />
+            <Ionicons name="warning" size={18} color="#fff" />
+            <Text style={styles.scamBannerText}>Never share OTP or PIN — tap to hear warning</Text>
+            <Ionicons name="volume-high" size={16} color="#fff" />
           </TouchableOpacity>
         )}
 
-        {/* Search */}
+        {/* Search bar */}
         <View style={styles.searchRow}>
           <View style={styles.searchBox}>
-            <Ionicons name="search" size={18} color={theme.colors.text.secondary} />
+            <Ionicons name="search" size={17} color={theme.colors.text.secondary} />
             <TextInput
               style={styles.searchInput}
-              placeholder="Ask a question..."
+              placeholder="Ask anything..."
+              placeholderTextColor={theme.colors.text.disabled}
               value={query}
               onChangeText={setQuery}
               onSubmitEditing={() => search()}
@@ -140,44 +149,44 @@ export default function KnowledgeScreen() {
             />
             {query.length > 0 && (
               <TouchableOpacity onPress={() => setQuery('')}>
-                <Ionicons name="close-circle" size={18} color={theme.colors.gray[400]} />
+                <Ionicons name="close-circle" size={17} color={theme.colors.gray[400]} />
               </TouchableOpacity>
             )}
           </View>
           <TouchableOpacity style={styles.searchBtn} onPress={() => search()}>
-            <Ionicons name="arrow-forward" size={20} color="#fff" />
+            <Ionicons name="arrow-forward" size={19} color="#fff" />
           </TouchableOpacity>
         </View>
 
         {/* Category tabs */}
-        <View style={styles.tabRow}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tabScroll} contentContainerStyle={styles.tabContent}>
           {CATEGORIES.map(cat => (
             <TouchableOpacity
               key={cat.id}
               style={[
                 styles.tab,
-                activeCategory === cat.id && { borderBottomColor: cat.color, borderBottomWidth: 2 },
+                activeCategory === cat.id && { backgroundColor: cat.bg, borderColor: cat.color },
               ]}
               onPress={() => setActiveCategory(cat.id)}
             >
               <Ionicons
                 name={cat.icon}
-                size={16}
+                size={15}
                 color={activeCategory === cat.id ? cat.color : theme.colors.gray[400]}
               />
               <Text style={[styles.tabText, activeCategory === cat.id && { color: cat.color }]}>
-                {t(`knowledge.${cat.id}`)}
+                {t(`knowledge.${cat.id}`) || cat.id}
               </Text>
             </TouchableOpacity>
           ))}
-        </View>
+        </ScrollView>
 
-        {/* Quick query chips */}
+        {/* Quick chips */}
         <View style={styles.chipsWrap}>
           {activeTab?.queries.map(q => (
             <TouchableOpacity
               key={q}
-              style={[styles.chip, { borderColor: activeTab.color + '40' }]}
+              style={[styles.chip, { borderColor: activeTab.color + '50', backgroundColor: activeTab.bg }]}
               onPress={() => { setQuery(q); search(q); }}
             >
               <Text style={[styles.chipText, { color: activeTab.color }]}>{q}</Text>
@@ -187,15 +196,17 @@ export default function KnowledgeScreen() {
 
         {loading && (
           <View style={styles.loadingBox}>
-            <ActivityIndicator color={theme.colors.primary[500]} />
-            <Text style={styles.loadingText}>Searching...</Text>
+            <ActivityIndicator color={theme.colors.primary[500]} size="small" />
+            <Text style={styles.loadingText}>Searching knowledge base...</Text>
           </View>
         )}
 
         {result && !loading && (
           <View style={styles.resultCard}>
             <View style={styles.resultHeader}>
-              <Ionicons name="bulb" size={18} color={theme.colors.primary[500]} />
+              <View style={[styles.resultIconWrap, { backgroundColor: activeTab?.color || theme.colors.primary[500] }]}>
+                <Ionicons name="bulb" size={14} color="#fff" />
+              </View>
               <Text style={styles.resultTitle}>Answer</Text>
               <TouchableOpacity onPress={handleSpeak} style={styles.speakBtn}>
                 <Ionicons
@@ -207,33 +218,36 @@ export default function KnowledgeScreen() {
             </View>
             <Text style={styles.resultText}>{result.response}</Text>
             {result.confidence != null && (
-              <Text style={styles.confidence}>
-                {Math.round(result.confidence * 100)}% match  •  {result.source || 'offline'}
-              </Text>
+              <View style={styles.metaRow}>
+                <View style={[styles.confidenceBadge, { backgroundColor: result.confidence > 0.6 ? '#ECFDF5' : '#FEF3C7' }]}>
+                  <Text style={[styles.confidenceText, { color: result.confidence > 0.6 ? '#059669' : '#D97706' }]}>
+                    {Math.round(result.confidence * 100)}% match
+                  </Text>
+                </View>
+                <Text style={styles.sourceText}>{result.source || 'offline knowledge base'}</Text>
+              </View>
             )}
           </View>
         )}
 
-        {/* Stats row */}
-        <View style={styles.statsRow}>
-          <View style={styles.statItem}>
-            <Text style={styles.statNum}>7</Text>
-            <Text style={styles.statLabel}>Crops</Text>
-          </View>
-          <View style={styles.statDivider} />
-          <View style={styles.statItem}>
-            <Text style={styles.statNum}>10</Text>
-            <Text style={styles.statLabel}>Ailments</Text>
-          </View>
-          <View style={styles.statDivider} />
-          <View style={styles.statItem}>
-            <Text style={styles.statNum}>6</Text>
-            <Text style={styles.statLabel}>Languages</Text>
-          </View>
-          <View style={styles.statDivider} />
-          <View style={styles.statItem}>
-            <Text style={styles.statNum}>100%</Text>
-            <Text style={styles.statLabel}>Offline</Text>
+        {/* Coverage stats */}
+        <View style={styles.coverageCard}>
+          <Text style={styles.coverageTitle}>Knowledge Coverage</Text>
+          <View style={styles.coverageGrid}>
+            {[
+              { icon: 'leaf', label: '10 Crops', sub: 'Rice to Cassava', color: '#059669' },
+              { icon: 'medical', label: '10 Ailments', sub: 'Fever to HIV', color: '#DC2626' },
+              { icon: 'shield-checkmark', label: '8 Scam Types', sub: 'OTP to Phishing', color: '#2563EB' },
+              { icon: 'globe', label: '16 Countries', sub: 'Emergency numbers', color: '#7C3AED' },
+              { icon: 'cash', label: 'Livelihoods', sub: 'Finance & rights', color: '#D97706' },
+              { icon: 'partly-sunny', label: 'Climate', sub: 'Drought & floods', color: '#0891B2' },
+            ].map(item => (
+              <View key={item.label} style={styles.coverageItem}>
+                <Ionicons name={item.icon} size={18} color={item.color} />
+                <Text style={[styles.coverageLabel, { color: item.color }]}>{item.label}</Text>
+                <Text style={styles.coverageSub}>{item.sub}</Text>
+              </View>
+            ))}
           </View>
         </View>
 
@@ -246,28 +260,22 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: theme.colors.background.paper },
   scroll: { paddingBottom: 40 },
   header: {
-    paddingTop: 24,
+    paddingTop: 20,
     paddingHorizontal: theme.spacing.lg,
     paddingBottom: theme.spacing.md,
     backgroundColor: theme.colors.background.default,
-    alignItems: 'center',
   },
-  title: { fontSize: 28, fontWeight: '700', color: theme.colors.text.primary },
-  subtitle: { fontSize: 14, color: theme.colors.text.secondary, marginTop: 4 },
+  title: { fontSize: 26, fontWeight: '800', color: theme.colors.text.primary, letterSpacing: -0.3 },
+  subtitle: { fontSize: 13, color: theme.colors.text.secondary, marginTop: 3 },
   scamBanner: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
     backgroundColor: '#DC2626',
     paddingHorizontal: theme.spacing.lg,
-    paddingVertical: 12,
+    paddingVertical: 11,
   },
-  scamBannerText: {
-    flex: 1,
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#fff',
-  },
+  scamBannerText: { flex: 1, fontSize: 13, fontWeight: '700', color: '#fff' },
   searchRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -294,24 +302,30 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.primary[500],
     justifyContent: 'center', alignItems: 'center',
   },
-  tabRow: {
-    flexDirection: 'row',
-    backgroundColor: theme.colors.background.default,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.gray[100],
+  tabScroll: { backgroundColor: theme.colors.background.default },
+  tabContent: {
+    paddingHorizontal: theme.spacing.lg,
+    paddingBottom: 12,
+    gap: 8,
   },
   tab: {
-    flex: 1, flexDirection: 'row', alignItems: 'center',
-    justifyContent: 'center', gap: 5, paddingVertical: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: theme.colors.gray[200],
+    backgroundColor: theme.colors.background.paper,
   },
   tabText: { fontSize: 13, fontWeight: '600', color: theme.colors.gray[400] },
-  chipsWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, padding: theme.spacing.lg },
+  chipsWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, padding: theme.spacing.lg },
   chip: {
-    paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20,
-    backgroundColor: theme.colors.background.default, borderWidth: 1,
-    ...theme.shadows.sm,
+    paddingHorizontal: 13, paddingVertical: 7, borderRadius: 16,
+    borderWidth: 1,
   },
-  chipText: { fontSize: 13, fontWeight: '500' },
+  chipText: { fontSize: 12, fontWeight: '600' },
   loadingBox: {
     flexDirection: 'row', alignItems: 'center', gap: 10,
     padding: theme.spacing.lg, justifyContent: 'center',
@@ -323,24 +337,33 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.background.default,
     borderRadius: theme.borderRadius.xl,
     ...theme.shadows.md,
+    marginBottom: theme.spacing.lg,
   },
   resultHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: theme.spacing.sm },
-  resultTitle: { flex: 1, fontSize: 14, fontWeight: '700', color: theme.colors.primary[500] },
+  resultIconWrap: {
+    width: 26, height: 26, borderRadius: 13,
+    justifyContent: 'center', alignItems: 'center',
+  },
+  resultTitle: { flex: 1, fontSize: 14, fontWeight: '700', color: theme.colors.text.primary },
   speakBtn: { padding: 4 },
   resultText: { fontSize: 15, color: theme.colors.text.primary, lineHeight: 24 },
-  confidence: { fontSize: 12, color: theme.colors.text.disabled, marginTop: 10 },
-  statsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  metaRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 12 },
+  confidenceBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
+  confidenceText: { fontSize: 11, fontWeight: '700' },
+  sourceText: { fontSize: 11, color: theme.colors.text.disabled },
+  coverageCard: {
     marginHorizontal: theme.spacing.lg,
-    marginTop: theme.spacing.lg,
-    padding: theme.spacing.md,
+    padding: theme.spacing.lg,
     backgroundColor: theme.colors.background.default,
     borderRadius: theme.borderRadius.xl,
     ...theme.shadows.sm,
   },
-  statItem: { flex: 1, alignItems: 'center' },
-  statNum: { fontSize: 20, fontWeight: '700', color: theme.colors.primary[500] },
-  statLabel: { fontSize: 11, color: theme.colors.text.secondary, marginTop: 2 },
-  statDivider: { width: 1, height: 32, backgroundColor: theme.colors.gray[200] },
+  coverageTitle: {
+    fontSize: 13, fontWeight: '700', color: theme.colors.text.secondary,
+    textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: theme.spacing.md,
+  },
+  coverageGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
+  coverageItem: { width: '30%', alignItems: 'center', gap: 3 },
+  coverageLabel: { fontSize: 12, fontWeight: '700', textAlign: 'center' },
+  coverageSub: { fontSize: 10, color: theme.colors.text.disabled, textAlign: 'center' },
 });

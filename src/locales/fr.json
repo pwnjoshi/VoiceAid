@@ -1,0 +1,29 @@
+{
+  "app": { "name": "VoiceAid", "tagline": "Votre assistant vocal" },
+  "home": {
+    "title": "VoiceAid", "subtitle": "Appuyez pour parler",
+    "listening": "J'écoute...", "processing": "Traitement...", "speaking": "Je parle...",
+    "offline": "Mode hors ligne", "online": "Mode en ligne",
+    "tapToSpeak": "Appuyez sur le bouton pour parler", "tapAgain": "Appuyez à nouveau quand vous avez terminé",
+    "helpText": "Posez des questions sur l'agriculture, la santé ou la sécurité"
+  },
+  "settings": {
+    "title": "Paramètres", "language": "Langue", "selectLanguage": "Choisir la langue",
+    "voiceSpeed": "Vitesse de la voix", "slow": "Lent", "normal": "Normal", "fast": "Rapide",
+    "offlineMode": "Mode hors ligne", "offlineModeDesc": "Utiliser l'IA de l'appareil sans internet",
+    "batterySaver": "Économie de batterie", "batterySaverDesc": "Réduire la consommation d'énergie",
+    "notifications": "Notifications", "notificationsDesc": "Activer les notifications de rappel",
+    "about": "À propos", "version": "Version", "caretaker": "Paramètres du soignant",
+    "caretakerPhone": "Téléphone du soignant", "save": "Enregistrer", "cancel": "Annuler"
+  },
+  "reminders": {
+    "title": "Rappels", "addReminder": "Ajouter un rappel", "medicine": "Médicament",
+    "meal": "Repas", "custom": "Personnalisé", "time": "Heure", "frequency": "Fréquence",
+    "daily": "Quotidien", "weekly": "Hebdomadaire", "once": "Une fois",
+    "active": "Actif", "inactive": "Inactif", "noReminders": "Aucun rappel",
+    "delete": "Supprimer", "edit": "Modifier"
+  },
+  "knowledge": { "agriculture": "Agriculture", "health": "Santé", "safety": "Sécurité", "general": "Général" },
+  "status": { "online": "En ligne", "offline": "Hors ligne", "battery": "Batterie", "lowBattery": "Batterie faible" },
+  "errors": { "micPermission": "Permission microphone refusée", "networkError": "Erreur réseau", "processingError": "Échec du traitement", "tryAgain": "Veuillez réessayer" }
+}
