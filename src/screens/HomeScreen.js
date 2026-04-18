@@ -1,19 +1,15 @@
 /**
- * HomeScreen — Voice Assistant
+ * HomeScreen — Gemini-style Voice Assistant
  *
- * Uses expo-speech-recognition for STT — works in Expo Go on Android.
- * Falls back to text input if permissions denied or STT unavailable.
- *
- * Flow:
- *  1. Tap mic → request mic permission → start STT
- *  2. Partial results shown live as user speaks
- *  3. Final result → search knowledge base (AWS Bedrock if online, offline otherwise)
- *  4. Answer spoken aloud via expo-speech TTS
+ * - Auto-starts listening when app opens
+ * - Replies as soon as user stops talking (continuous: false)
+ * - Clean minimal UI — mic button center stage
+ * - Text input fallback when STT unavailable (Expo Go)
  */
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView,
-  TouchableOpacity, Animated, Platform, TextInput,
+  View, Text, StyleSheet, TouchableOpacity,
+  Animated, Platform, TextInput, ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -24,21 +20,17 @@ import NetInfo from '@react-native-community/netinfo';
 import VoiceService from '../services/VoiceService';
 import EnhancedOfflineService from '../services/EnhancedOfflineService';
 import ApiService from '../services/ApiService';
-import theme from '../theme';
 
-// expo-speech-recognition requires a dev build — not available in Expo Go.
-// We import it safely and fall back to text input if the native module is absent.
+// ── Safe STT import ───────────────────────────────────────────────────────────
 let ExpoSpeechRecognitionModule = null;
-let useSpeechRecognitionEvent = (_event, _cb) => {};  // no-op in Expo Go
+let useSpeechRecognitionEvent = (_e, _cb) => {};
 try {
   const stt = require('expo-speech-recognition');
   if (stt?.ExpoSpeechRecognitionModule) {
     ExpoSpeechRecognitionModule = stt.ExpoSpeechRecognitionModule;
     useSpeechRecognitionEvent = stt.useSpeechRecognitionEvent;
   }
-} catch {
-  // Native module not available — text input fallback will be used
-}
+} catch { /* Expo Go — text input fallback */ }
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 const S = {
@@ -46,7 +38,6 @@ const S = {
   LISTENING:  'listening',
   PROCESSING: 'processing',
   SPEAKING:   'speaking',
-  ERROR:      'error',
 };
 
 const LOCALE_MAP = {
@@ -56,63 +47,59 @@ const LOCALE_MAP = {
   fr: 'fr-FR', id: 'id-ID',
 };
 
-const IMPACT_STATS = [
-  { icon: 'people',        value: '700M+', label: 'Non-literate adults globally' },
-  { icon: 'globe',         value: '11',    label: 'Languages supported' },
-  { icon: 'cloud-offline', value: '100%',  label: 'Works offline' },
-  { icon: 'flash',         value: '<2MB',  label: 'App size' },
-];
-
-const DOMAINS = [
-  { icon: 'leaf',             label: 'Agriculture', sub: '10 crops',        color: '#059669', bg: '#ECFDF5' },
-  { icon: 'medical',          label: 'Health',      sub: '10 ailments',     color: '#DC2626', bg: '#FEF2F2' },
-  { icon: 'shield-checkmark', label: 'Safety',      sub: 'Fraud & scams',   color: '#2563EB', bg: '#EFF6FF' },
-  { icon: 'cash',             label: 'Livelihoods', sub: 'Finance & rights',color: '#D97706', bg: '#FFFBEB' },
-  { icon: 'partly-sunny',     label: 'Climate',     sub: 'Adaptation',      color: '#7C3AED', bg: '#F5F3FF' },
-  { icon: 'people',           label: 'Community',   sub: 'Daily living',    color: '#0891B2', bg: '#ECFEFF' },
-];
+const STATE_CONFIG = {
+  [S.IDLE]:       { color: '#6366F1', icon: 'mic-outline',  label: 'Tap to speak' },
+  [S.LISTENING]:  { color: '#3B82F6', icon: 'mic',          label: 'Listening...' },
+  [S.PROCESSING]: { color: '#10B981', icon: 'ellipsis-horizontal', label: 'Thinking...' },
+  [S.SPEAKING]:   { color: '#F59E0B', icon: 'volume-high',  label: 'Speaking...' },
+};
 
 // ── Component ─────────────────────────────────────────────────────────────────
 export default function HomeScreen() {
   const { t, i18n } = useTranslation();
 
-  const [appState,     setAppState]     = useState(S.IDLE);
-  const [isOnline,     setIsOnline]     = useState(true);   // demo: show online
-  const [backendUp,    setBackendUp]    = useState(false);
-  const [response,     setResponse]     = useState('For pest control on crops, use neem oil spray. Mix 10ml neem oil per liter of water and spray early morning. Remove affected leaves immediately. This works for stem borer, aphids, and whitefly.');
-  const [transcript,   setTranscript]   = useState('How do I control pests on my crops?');
-  const [partial,      setPartial]      = useState('');
-  const [errorMsg,     setErrorMsg]     = useState('');
-  const [queryCount,   setQueryCount]   = useState(3);
-  const [answerSrc,    setAnswerSrc]    = useState('offline');
-  const [sttAvailable, setSttAvailable] = useState(!!ExpoSpeechRecognitionModule);
-  const [textInput,    setTextInput]    = useState('');
+  const [state,       setState_]    = useState(S.IDLE);
+  const [isOnline,    setIsOnline]  = useState(false);
+  const [backendUp,   setBackendUp] = useState(false);
+  const [transcript,  setTranscript]= useState('');
+  const [partial,     setPartial]   = useState('');
+  const [response,    setResponse]  = useState('');
+  const [answerSrc,   setAnswerSrc] = useState('');
+  const [errorMsg,    setErrorMsg]  = useState('');
+  const [textInput,   setTextInput] = useState('');
+  const [sttReady,    setSttReady]  = useState(!!ExpoSpeechRecognitionModule);
+  const [inputFocused, setInputFocused] = useState(false);
 
-  const stateRef      = useRef(S.IDLE);
-  const finalTextRef  = useRef('');
+  const stateRef     = useRef(S.IDLE);
+  const finalTextRef = useRef('');
+  const autoStarted  = useRef(false);
+  const inputRef     = useRef(null);
 
-  const scaleAnim = useRef(new Animated.Value(1)).current;
-  const pulseAnim = useRef(new Animated.Value(1)).current;
-  const pulseLoop = useRef(null);
+  // Animations
+  const pulseAnim  = useRef(new Animated.Value(1)).current;
+  const pulseLoop  = useRef(null);
+  const fadeAnim   = useRef(new Animated.Value(0)).current;
+  const slideAnim  = useRef(new Animated.Value(20)).current;
 
   const sttLocale = LOCALE_MAP[i18n.language] || 'en-US';
 
-  // ── expo-speech-recognition event hooks ────────────────────────────────────
+  const setState = (s) => { stateRef.current = s; setState_(s); };
+
+  // ── STT events ──────────────────────────────────────────────────────────────
   useSpeechRecognitionEvent('start', () => {
     setState(S.LISTENING);
-    Animated.spring(scaleAnim, { toValue: 1.08, useNativeDriver: true }).start();
   });
 
   useSpeechRecognitionEvent('end', () => {
-    // Fires when recognition session ends (natural or manual stop)
     if (stateRef.current === S.LISTENING) {
       const text = finalTextRef.current;
-      if (text) {
-        processText(text);
-      } else {
-        setErrorMsg('No speech detected. Tap the mic and speak your question.');
-        setState(S.ERROR);
-        haptic('heavy');
+      if (text) processText(text);
+      else {
+        setState(S.IDLE);
+        // Auto-restart after silence
+        setTimeout(() => {
+          if (stateRef.current === S.IDLE) startListening();
+        }, 800);
       }
     }
   });
@@ -123,10 +110,7 @@ export default function HomeScreen() {
       finalTextRef.current = text;
       setTranscript(text);
       setPartial('');
-      // Process immediately on final result
-      if (stateRef.current === S.LISTENING) {
-        processText(text);
-      }
+      if (stateRef.current === S.LISTENING) processText(text);
     } else {
       setPartial(text);
     }
@@ -134,29 +118,23 @@ export default function HomeScreen() {
 
   useSpeechRecognitionEvent('error', (event) => {
     const code = event.error || '';
-    if (code === 'no-speech') {
-      setErrorMsg('No speech detected. Tap the mic and speak your question.');
-    } else if (code === 'not-allowed' || code === 'service-not-allowed') {
-      setSttAvailable(false);
-      setErrorMsg('Microphone permission denied. Use text input below.');
-    } else if (code === 'network') {
-      // STT needs network on some devices — fall back to text
-      setSttAvailable(false);
-      setErrorMsg('Voice recognition needs internet on this device. Use text input below.');
-    } else {
-      setErrorMsg(`Voice error: ${code}. Please try again.`);
+    if (code === 'not-allowed' || code === 'service-not-allowed') {
+      setSttReady(false);
     }
     setPartial('');
     if (stateRef.current === S.LISTENING) {
-      setState(S.ERROR);
-      haptic('heavy');
+      setState(S.IDLE);
+      // Retry after error
+      setTimeout(() => {
+        if (stateRef.current === S.IDLE && sttReady) startListening();
+      }, 1200);
     }
   });
 
-  // ── Network + backend health ────────────────────────────────────────────────
+  // ── Network ─────────────────────────────────────────────────────────────────
   useEffect(() => {
-    const unsub = NetInfo.addEventListener(async (state) => {
-      const online = !!state.isConnected;
+    const unsub = NetInfo.addEventListener(async (s) => {
+      const online = !!s.isConnected;
       setIsOnline(online);
       if (online) {
         const up = await ApiService.checkHealth();
@@ -168,25 +146,51 @@ export default function HomeScreen() {
     return () => unsub();
   }, []);
 
-  // ── Pulse animation ─────────────────────────────────────────────────────────
+  // ── Auto-start on mount ──────────────────────────────────────────────────────
   useEffect(() => {
-    if (appState === S.LISTENING) {
+    if (!autoStarted.current && sttReady) {
+      autoStarted.current = true;
+      // Small delay so the screen renders first
+      setTimeout(() => startListening(), 600);
+    }
+  }, [sttReady]);
+
+  // ── Pulse animation ──────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (state === S.LISTENING) {
       pulseLoop.current = Animated.loop(
         Animated.sequence([
-          Animated.timing(pulseAnim, { toValue: 1.22, duration: 700, useNativeDriver: true }),
-          Animated.timing(pulseAnim, { toValue: 1,    duration: 700, useNativeDriver: true }),
+          Animated.timing(pulseAnim, { toValue: 1.28, duration: 600, useNativeDriver: true }),
+          Animated.timing(pulseAnim, { toValue: 1,    duration: 600, useNativeDriver: true }),
         ])
       );
       pulseLoop.current.start();
+    } else if (state === S.PROCESSING) {
+      pulseLoop.current?.stop();
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(pulseAnim, { toValue: 1.08, duration: 400, useNativeDriver: true }),
+          Animated.timing(pulseAnim, { toValue: 0.95, duration: 400, useNativeDriver: true }),
+        ])
+      ).start();
     } else {
       pulseLoop.current?.stop();
       Animated.spring(pulseAnim, { toValue: 1, useNativeDriver: true }).start();
     }
-  }, [appState]);
+  }, [state]);
 
-  // ── Helpers ─────────────────────────────────────────────────────────────────
-  const setState = (s) => { stateRef.current = s; setAppState(s); };
+  // ── Fade-in answer ───────────────────────────────────────────────────────────
+  const showAnswer = (text) => {
+    fadeAnim.setValue(0);
+    slideAnim.setValue(16);
+    setResponse(text);
+    Animated.parallel([
+      Animated.timing(fadeAnim,  { toValue: 1, duration: 350, useNativeDriver: true }),
+      Animated.timing(slideAnim, { toValue: 0, duration: 350, useNativeDriver: true }),
+    ]).start();
+  };
 
+  // ── Haptic ───────────────────────────────────────────────────────────────────
   const haptic = (type = 'medium') => {
     if (Platform.OS === 'web') return;
     Haptics.impactAsync(
@@ -196,22 +200,65 @@ export default function HomeScreen() {
     ).catch(() => {});
   };
 
-  // ── Button press ────────────────────────────────────────────────────────────
-  const handlePress = async () => {
-    if (appState === S.SPEAKING) {
-      await VoiceService.stop();
+  // ── Start STT ────────────────────────────────────────────────────────────────
+  const startListening = async () => {
+    if (!ExpoSpeechRecognitionModule || !sttReady) return;
+    if (stateRef.current === S.LISTENING || stateRef.current === S.PROCESSING) return;
+
+    setErrorMsg('');
+    setPartial('');
+    finalTextRef.current = '';
+    haptic('medium');
+
+    try {
+      const perm = await ExpoSpeechRecognitionModule.requestPermissionsAsync();
+      if (!perm.granted) { setSttReady(false); return; }
+
+      ExpoSpeechRecognitionModule.start({
+        lang:            sttLocale,
+        interimResults:  true,
+        maxAlternatives: 1,
+        continuous:      false,   // stops after user pauses — like Gemini
+        requiresOnDeviceRecognition: false,
+        addsPunctuation: false,
+      });
+    } catch (err) {
+      console.error('STT start:', err);
       setState(S.IDLE);
-      return;
-    }
-    if (!sttAvailable) return;
-    if (appState === S.IDLE || appState === S.ERROR) {
-      await startListening();
-    } else if (appState === S.LISTENING) {
-      stopListening();
     }
   };
 
-  // ── Text input submit ───────────────────────────────────────────────────────
+  // ── Stop STT ─────────────────────────────────────────────────────────────────
+  const stopListening = () => {
+    if (!ExpoSpeechRecognitionModule) return;
+    try { ExpoSpeechRecognitionModule.stop(); } catch {}
+  };
+
+  // ── Mic button press ─────────────────────────────────────────────────────────
+  const handleMicPress = async () => {
+    haptic('medium');
+
+    // If STT not available → focus text input (mic acts as "activate input")
+    if (!sttReady) {
+      setInputFocused(true);
+      setTimeout(() => inputRef.current?.focus(), 100);
+      return;
+    }
+
+    if (state === S.SPEAKING) {
+      await VoiceService.stop();
+      setState(S.IDLE);
+      setTimeout(() => startListening(), 400);
+    } else if (state === S.LISTENING) {
+      stopListening();
+    } else if (state === S.IDLE) {
+      setResponse('');
+      setTranscript('');
+      startListening();
+    }
+  };
+
+  // ── Text submit ───────────────────────────────────────────────────────────────
   const handleTextSubmit = () => {
     const text = textInput.trim();
     if (!text) return;
@@ -220,297 +267,225 @@ export default function HomeScreen() {
     processText(text);
   };
 
-  // ── Start STT ───────────────────────────────────────────────────────────────
-  const startListening = async () => {
-    if (!ExpoSpeechRecognitionModule) {
-      setSttAvailable(false);
-      return;
-    }
-    setErrorMsg('');
-    setResponse('');
-    setTranscript('');
-    setPartial('');
-    finalTextRef.current = '';
-    haptic('medium');
-
-    try {
-      // Request permission first
-      const result = await ExpoSpeechRecognitionModule.requestPermissionsAsync();
-      if (!result.granted) {
-        setSttAvailable(false);
-        setErrorMsg('Microphone permission denied. Use text input below.');
-        setState(S.ERROR);
-        haptic('heavy');
-        return;
-      }
-
-      // Start recognition
-      ExpoSpeechRecognitionModule.start({
-        lang:          sttLocale,
-        interimResults: true,       // show partial results live
-        maxAlternatives: 1,
-        continuous:    false,       // stop after first utterance
-        requiresOnDeviceRecognition: false,
-        addsPunctuation: false,
-      });
-      // State will be set to LISTENING by the 'start' event handler
-    } catch (err) {
-      console.error('STT start error:', err);
-      setErrorMsg('Could not start voice recognition. Please try again.');
-      setState(S.ERROR);
-      haptic('heavy');
-    }
-  };
-
-  // ── Stop STT ────────────────────────────────────────────────────────────────
-  const stopListening = () => {
-    if (!ExpoSpeechRecognitionModule) return;
-    try {
-      ExpoSpeechRecognitionModule.stop();
-      // 'end' event will fire and trigger processText
-    } catch (err) {
-      console.error('STT stop error:', err);
-    }
-  };
-
-  // ── Core: answer the question ────────────────────────────────────────────────
+  // ── Answer the question ───────────────────────────────────────────────────────
   const processText = useCallback(async (spokenText) => {
     if (stateRef.current === S.PROCESSING || stateRef.current === S.SPEAKING) return;
-
     const text = (spokenText || '').trim();
-    if (!text) {
-      setErrorMsg('No input detected. Please speak or type your question.');
-      setState(S.ERROR);
-      haptic('heavy');
-      return;
-    }
+    if (!text) { setState(S.IDLE); return; }
 
     haptic('light');
     setState(S.PROCESSING);
-    Animated.spring(scaleAnim, { toValue: 1, useNativeDriver: true }).start();
 
     let answer = '';
     let src = 'offline';
 
     try {
-      // 1. Try AWS Bedrock RAG if online and backend is up
       if (isOnline && backendUp) {
-        const awsResult = await ApiService.queryText(text, i18n.language);
-        if (awsResult?.response) {
-          answer = awsResult.response;
-          src = 'aws';
-        }
+        const aws = await ApiService.queryText(text, i18n.language);
+        if (aws?.response) { answer = aws.response; src = 'aws'; }
       }
-
-      // 2. Fall back to on-device knowledge base
       if (!answer) {
-        const offlineResult = await EnhancedOfflineService.search(text);
-        answer = offlineResult.response || t('errors.processingError');
+        const off = await EnhancedOfflineService.search(text);
+        answer = off.response || 'I could not find an answer. Please try again.';
         src = 'offline';
       }
 
-      setResponse(answer);
+      showAnswer(answer);
       setAnswerSrc(src);
-      setQueryCount(c => c + 1);
       setState(S.SPEAKING);
-
       ApiService.logQuery(text, answer, src).catch(() => {});
 
       await VoiceService.speak(answer, {
         language:  i18n.language,
-        onDone:    () => setState(S.IDLE),
-        onError:   () => setState(S.IDLE),
-        onStopped: () => setState(S.IDLE),
+        onDone:    () => { setState(S.IDLE); setTimeout(() => startListening(), 800); },
+        onError:   () => { setState(S.IDLE); },
+        onStopped: () => { setState(S.IDLE); },
       });
 
       haptic('light');
     } catch (err) {
-      console.error('processText error:', err);
-      setErrorMsg(t('errors.processingError'));
-      setState(S.ERROR);
-      haptic('heavy');
+      console.error('processText:', err);
+      setState(S.IDLE);
     }
   }, [isOnline, backendUp, i18n.language]);
 
-  // ── Button config ────────────────────────────────────────────────────────────
-  const btn = (() => {
-    switch (appState) {
-      case S.LISTENING:  return { icon: 'mic',          color: '#3B82F6', label: t('home.listening') };
-      case S.PROCESSING: return { icon: 'sync',         color: '#10B981', label: t('home.processing') };
-      case S.SPEAKING:   return { icon: 'volume-high',  color: '#F59E0B', label: t('home.speaking') };
-      case S.ERROR:      return { icon: 'alert-circle', color: '#DC2626', label: 'Tap to retry' };
-      default:           return {
-        icon:  sttAvailable ? 'mic-outline' : 'chatbubble-outline',
-        color: isOnline ? theme.colors.primary[500] : '#8B5CF6',
-        label: isOnline ? t('home.online') : t('home.offline'),
-      };
-    }
-  })();
+  // ── Derived ───────────────────────────────────────────────────────────────────
+  const cfg        = STATE_CONFIG[state];
+  const isActive   = state === S.LISTENING || state === S.PROCESSING;
+  const liveText   = partial || (state === S.LISTENING ? '' : transcript);
 
-  const isDisabled = appState === S.PROCESSING;
-
-  // ── Render ───────────────────────────────────────────────────────────────────
+  // ── Render ────────────────────────────────────────────────────────────────────
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView
         contentContainerStyle={styles.scroll}
-        bounces={false}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
+        bounces={false}
       >
-        {/* Header */}
-        <View style={styles.header}>
-          <View style={styles.headerTop}>
-            <View>
-              <Text style={styles.title}>{t('app.name')}</Text>
-              <Text style={styles.subtitle}>{t('app.tagline')}</Text>
-            </View>
-            <View style={styles.statusBadge}>
-              <View style={[styles.dot, { backgroundColor: isOnline ? '#10B981' : '#8B5CF6' }]} />
-              <Text style={styles.statusText}>
-                {isOnline ? (backendUp ? 'AWS + Offline' : t('status.online')) : t('status.offline')}
-              </Text>
-            </View>
+
+        {/* ── Top bar ── */}
+        <View style={styles.topBar}>
+          <View>
+            <Text style={styles.appName}>VoiceAid</Text>
+            <Text style={styles.appSub}>AI Voice Assistant</Text>
+          </View>
+          <View style={styles.statusRow}>
+            <View style={[styles.statusDot, { backgroundColor: isOnline ? '#10B981' : '#9CA3AF' }]} />
+            <Text style={styles.statusText}>
+              {isOnline ? (backendUp ? 'AWS' : 'Online') : 'Offline'}
+            </Text>
           </View>
         </View>
 
-        {/* Feature pills */}
-        <View style={styles.pillsRow}>
-          <View style={styles.pill}>
-            <Ionicons name="shield-checkmark" size={13} color="#10B981" />
-            <Text style={styles.pillText}>On-device AI</Text>
-          </View>
-          <View style={styles.pill}>
-            <Ionicons name="globe" size={13} color="#6366F1" />
-            <Text style={styles.pillText}>11 Languages</Text>
-          </View>
-          <View style={[styles.pill, backendUp && styles.pillActive]}>
-            <Ionicons name={backendUp ? 'cloud' : 'cloud-offline'} size={13} color={backendUp ? '#059669' : '#F59E0B'} />
-            <Text style={styles.pillText}>{backendUp ? 'AWS Connected' : 'Offline Mode'}</Text>
-          </View>
-        </View>
-
-        {/* Voice button */}
-        <View style={styles.buttonArea}>
-          <Animated.View style={{ transform: [{ scale: Animated.multiply(scaleAnim, pulseAnim) }] }}>
-            <TouchableOpacity
-              style={[
-                styles.voiceBtn,
-                { backgroundColor: btn.color },
-                (isDisabled || (!sttAvailable && appState !== S.SPEAKING)) && styles.disabled,
-              ]}
-              onPress={handlePress}
-              activeOpacity={0.88}
-              disabled={isDisabled}
-            >
-              <Ionicons name={btn.icon} size={68} color="#fff" />
-            </TouchableOpacity>
-          </Animated.View>
-
-          <Text style={styles.stateLabel}>{btn.label}</Text>
-          {appState === S.IDLE     && sttAvailable  && <Text style={styles.hint}>{t('home.tapToSpeak')}</Text>}
-          {appState === S.IDLE     && !sttAvailable && <Text style={styles.hint}>Type your question below</Text>}
-          {appState === S.LISTENING                 && <Text style={styles.hint}>{t('home.tapAgain')}</Text>}
-          {appState === S.SPEAKING                  && <Text style={styles.hint}>Tap to stop</Text>}
-          {queryCount > 0 && appState === S.IDLE && (
-            <Text style={styles.queryCount}>{queryCount} question{queryCount !== 1 ? 's' : ''} answered</Text>
+        {/* ── Live transcript ── */}
+        <View style={styles.transcriptArea}>
+          {liveText ? (
+            <Text style={[
+              styles.transcriptText,
+              state === S.LISTENING && styles.transcriptLive,
+            ]} numberOfLines={3}>
+              {liveText}
+            </Text>
+          ) : (
+            <Text style={styles.transcriptPlaceholder}>
+              {state === S.IDLE && !response
+                ? sttReady ? 'Listening for your question...' : 'Type your question below'
+                : state === S.PROCESSING ? 'Processing...'
+                : state === S.SPEAKING ? 'Speaking...'
+                : ''}
+            </Text>
           )}
         </View>
 
-        {/* Text input fallback */}
-        {!sttAvailable && (
-          <View style={styles.textInputRow}>
+        {/* ── Mic button ── */}
+        <View style={styles.micArea}>
+          {/* Outer ring — only when listening */}
+          {state === S.LISTENING && (
+            <Animated.View
+              style={[
+                styles.micRing,
+                { transform: [{ scale: pulseAnim }], borderColor: cfg.color + '40' },
+              ]}
+            />
+          )}
+
+          <Animated.View style={{ transform: [{ scale: state === S.LISTENING ? pulseAnim : new Animated.Value(1) }] }}>
+            <TouchableOpacity
+              style={[styles.micBtn, { backgroundColor: cfg.color }]}
+              onPress={handleMicPress}
+              activeOpacity={0.85}
+              disabled={state === S.PROCESSING}
+            >
+              <Ionicons name={cfg.icon} size={52} color="#fff" />
+            </TouchableOpacity>
+          </Animated.View>
+
+          <Text style={[styles.micLabel, { color: cfg.color }]}>{cfg.label}</Text>
+
+          {/* Stop hint */}
+          {state === S.LISTENING && (
+            <Text style={styles.stopHint}>Tap to stop</Text>
+          )}
+          {state === S.SPEAKING && (
+            <Text style={styles.stopHint}>Tap mic to interrupt</Text>
+          )}
+        </View>
+
+        {/* ── Text input fallback ── */}
+        {!sttReady && (
+          <View style={styles.inputRow}>
             <TextInput
-              style={styles.textInputField}
-              placeholder="Type your question here..."
-              placeholderTextColor={theme.colors.text.disabled}
+              style={styles.inputField}
+              placeholder="Ask anything..."
+              placeholderTextColor="#9CA3AF"
               value={textInput}
               onChangeText={setTextInput}
               onSubmitEditing={handleTextSubmit}
               returnKeyType="send"
-              editable={appState === S.IDLE || appState === S.ERROR}
+              editable={state === S.IDLE}
             />
             <TouchableOpacity
-              style={[styles.sendBtn, (!textInput.trim() || isDisabled) && styles.disabled]}
+              style={[styles.sendBtn, !textInput.trim() && styles.sendBtnDisabled]}
               onPress={handleTextSubmit}
-              disabled={!textInput.trim() || isDisabled}
+              disabled={!textInput.trim() || state !== S.IDLE}
             >
-              <Ionicons name="send" size={20} color="#fff" />
+              <Ionicons name="arrow-up" size={20} color="#fff" />
             </TouchableOpacity>
           </View>
         )}
 
-        {/* Live transcript */}
-        {appState === S.LISTENING && (partial || transcript) ? (
-          <View style={styles.transcriptBox}>
-            <Ionicons name="mic" size={14} color="#3B82F6" />
-            <Text style={styles.transcriptText} numberOfLines={2}>{partial || transcript}</Text>
-          </View>
-        ) : null}
-
-        {/* What you asked */}
-        {transcript && appState !== S.LISTENING ? (
-          <View style={styles.questionBox}>
-            <Ionicons name="chatbubble-outline" size={13} color={theme.colors.text.secondary} />
-            <Text style={styles.questionText} numberOfLines={2}>"{transcript}"</Text>
-          </View>
-        ) : null}
-
-        {/* Error */}
-        {appState === S.ERROR && errorMsg ? (
-          <View style={styles.errorBox}>
-            <Ionicons name="alert-circle" size={18} color="#DC2626" />
+        {/* ── Error ── */}
+        {errorMsg ? (
+          <View style={styles.errorRow}>
+            <Ionicons name="alert-circle-outline" size={16} color="#EF4444" />
             <Text style={styles.errorText}>{errorMsg}</Text>
           </View>
         ) : null}
 
-        {/* Answer card */}
+        {/* ── Answer card ── */}
         {response ? (
-          <View style={styles.responseCard}>
-            <View style={styles.responseHeader}>
-              <View style={[styles.responseIconWrap, { backgroundColor: answerSrc === 'aws' ? '#059669' : theme.colors.primary[500] }]}>
-                <Ionicons name={answerSrc === 'aws' ? 'cloud' : 'hardware-chip'} size={14} color="#fff" />
+          <Animated.View
+            style={[
+              styles.answerCard,
+              { opacity: fadeAnim, transform: [{ translateY: slideAnim }] },
+            ]}
+          >
+            {/* Source badge */}
+            <View style={styles.answerMeta}>
+              <View style={[styles.sourceBadge, { backgroundColor: answerSrc === 'aws' ? '#ECFDF5' : '#EEF2FF' }]}>
+                <Ionicons
+                  name={answerSrc === 'aws' ? 'cloud-outline' : 'hardware-chip-outline'}
+                  size={12}
+                  color={answerSrc === 'aws' ? '#059669' : '#6366F1'}
+                />
+                <Text style={[styles.sourceText, { color: answerSrc === 'aws' ? '#059669' : '#6366F1' }]}>
+                  {answerSrc === 'aws' ? 'AWS Bedrock' : 'On-device AI'}
+                </Text>
               </View>
-              <Text style={styles.responseTitle}>Answer</Text>
-              <Text style={styles.sourceTag}>{answerSrc === 'aws' ? 'AWS Bedrock' : 'On-device'}</Text>
               <TouchableOpacity
                 onPress={() => VoiceService.speak(response, { language: i18n.language })}
                 style={styles.replayBtn}
               >
-                <Ionicons name="volume-high" size={20} color={theme.colors.primary[500]} />
+                <Ionicons name="volume-medium-outline" size={18} color="#6B7280" />
               </TouchableOpacity>
             </View>
-            <Text style={styles.responseText}>{response}</Text>
-          </View>
+
+            <Text style={styles.answerText}>{response}</Text>
+
+            {/* What was asked */}
+            {transcript ? (
+              <Text style={styles.questionText}>"{transcript}"</Text>
+            ) : null}
+          </Animated.View>
         ) : null}
 
-        {/* Knowledge domains */}
-        <View style={styles.domainsSection}>
-          <Text style={styles.sectionLabel}>Knowledge Domains</Text>
-          <View style={styles.domainsGrid}>
-            {DOMAINS.map(item => (
-              <View key={item.label} style={[styles.domainCard, { backgroundColor: item.bg }]}>
-                <Ionicons name={item.icon} size={24} color={item.color} />
-                <Text style={[styles.domainLabel, { color: item.color }]}>{item.label}</Text>
-                <Text style={styles.domainSub}>{item.sub}</Text>
-              </View>
-            ))}
+        {/* ── Domain chips ── */}
+        {!response && state === S.IDLE && (
+          <View style={styles.chipsSection}>
+            <Text style={styles.chipsLabel}>Ask about</Text>
+            <View style={styles.chipsRow}>
+              {[
+                { icon: 'leaf',             label: 'Farming',   color: '#059669', bg: '#ECFDF5', q: 'How do I control pests on my crops?' },
+                { icon: 'medical',          label: 'Health',    color: '#DC2626', bg: '#FEF2F2', q: 'What should I do for fever?' },
+                { icon: 'shield-checkmark', label: 'Safety',    color: '#2563EB', bg: '#EFF6FF', q: 'How to protect from OTP scams?' },
+                { icon: 'cash',             label: 'Finance',   color: '#D97706', bg: '#FFFBEB', q: 'How to save money safely?' },
+              ].map(item => (
+                <TouchableOpacity
+                  key={item.label}
+                  style={[styles.chip, { backgroundColor: item.bg }]}
+                  onPress={() => {
+                    setTranscript(item.q);
+                    processText(item.q);
+                  }}
+                >
+                  <Ionicons name={item.icon} size={16} color={item.color} />
+                  <Text style={[styles.chipText, { color: item.color }]}>{item.label}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
           </View>
-        </View>
-
-        {/* Impact stats */}
-        <View style={styles.impactSection}>
-          <Text style={styles.sectionLabel}>Global Impact</Text>
-          <View style={styles.statsGrid}>
-            {IMPACT_STATS.map(stat => (
-              <View key={stat.label} style={styles.statCard}>
-                <Ionicons name={stat.icon} size={20} color={theme.colors.primary[500]} />
-                <Text style={styles.statValue}>{stat.value}</Text>
-                <Text style={styles.statLabel}>{stat.label}</Text>
-              </View>
-            ))}
-          </View>
-        </View>
+        )}
 
       </ScrollView>
     </SafeAreaView>
@@ -519,133 +494,192 @@ export default function HomeScreen() {
 
 // ── Styles ────────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
-  safe:   { flex: 1, backgroundColor: theme.colors.background.paper },
-  scroll: { paddingBottom: 40 },
+  safe:   { flex: 1, backgroundColor: '#FAFAFA' },
+  scroll: { flexGrow: 1, paddingBottom: 32 },
 
-  header: {
-    paddingTop: 20, paddingHorizontal: theme.spacing.lg,
-    paddingBottom: theme.spacing.md,
-    backgroundColor: theme.colors.background.default,
-  },
-  headerTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  title:    { fontSize: 30, fontWeight: '800', color: theme.colors.text.primary, letterSpacing: -0.5 },
-  subtitle: { fontSize: 14, color: theme.colors.text.secondary, marginTop: 2 },
-  statusBadge: {
-    flexDirection: 'row', alignItems: 'center', gap: 6,
-    backgroundColor: theme.colors.background.paper,
-    paddingHorizontal: 12, paddingVertical: 6,
-    borderRadius: 20, borderWidth: 1, borderColor: theme.colors.gray[200],
-  },
-  dot:        { width: 8, height: 8, borderRadius: 4 },
-  statusText: { fontSize: 11, fontWeight: '600', color: theme.colors.text.secondary },
-
-  pillsRow: {
-    flexDirection: 'row', gap: 8,
-    paddingHorizontal: theme.spacing.lg, paddingVertical: theme.spacing.sm,
-    backgroundColor: theme.colors.background.default,
-  },
-  pill: {
-    flexDirection: 'row', alignItems: 'center', gap: 5,
-    backgroundColor: theme.colors.background.paper,
-    paddingHorizontal: 10, paddingVertical: 5,
-    borderRadius: 12, borderWidth: 1, borderColor: theme.colors.gray[200],
-  },
-  pillActive: { borderColor: '#059669', backgroundColor: '#ECFDF5' },
-  pillText:   { fontSize: 11, fontWeight: '600', color: theme.colors.text.secondary },
-
-  buttonArea: {
+  // Top bar
+  topBar: {
+    flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: theme.spacing.xl,
-    paddingHorizontal: theme.spacing.lg,
+    justifyContent: 'space-between',
+    paddingHorizontal: 24,
+    paddingTop: 16,
+    paddingBottom: 8,
   },
-  voiceBtn: {
-    width: 172, height: 172, borderRadius: 86,
-    justifyContent: 'center', alignItems: 'center',
-    elevation: 12,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.2, shadowRadius: 16,
-  },
-  disabled:   { opacity: 0.55 },
-  stateLabel: { fontSize: 20, fontWeight: '700', color: theme.colors.text.primary, marginTop: theme.spacing.lg },
-  hint:       { fontSize: 14, color: theme.colors.text.secondary, marginTop: 6, textAlign: 'center' },
-  queryCount: { fontSize: 12, color: theme.colors.primary[500], marginTop: 8, fontWeight: '600' },
+  appName: { fontSize: 22, fontWeight: '800', color: '#111827', letterSpacing: -0.5 },
+  appSub:  { fontSize: 12, color: '#9CA3AF', marginTop: 1 },
+  statusRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  statusDot: { width: 7, height: 7, borderRadius: 4 },
+  statusText: { fontSize: 12, fontWeight: '600', color: '#6B7280' },
 
-  textInputRow: {
-    flexDirection: 'row', alignItems: 'center', gap: 10,
-    marginHorizontal: theme.spacing.lg, marginBottom: theme.spacing.md,
+  // Transcript
+  transcriptArea: {
+    minHeight: 72,
+    justifyContent: 'center',
+    paddingHorizontal: 28,
+    paddingVertical: 16,
   },
-  textInputField: {
-    flex: 1, fontSize: 15, color: theme.colors.text.primary,
-    backgroundColor: theme.colors.background.default,
-    borderRadius: theme.borderRadius.lg,
-    paddingHorizontal: 14, paddingVertical: 12,
-    borderWidth: 1, borderColor: theme.colors.gray[200],
+  transcriptText: {
+    fontSize: 18,
+    fontWeight: '500',
+    color: '#374151',
+    textAlign: 'center',
+    lineHeight: 26,
+  },
+  transcriptLive: {
+    color: '#3B82F6',
+    fontStyle: 'italic',
+  },
+  transcriptPlaceholder: {
+    fontSize: 15,
+    color: '#D1D5DB',
+    textAlign: 'center',
+    fontStyle: 'italic',
+  },
+
+  // Mic
+  micArea: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 32,
+    position: 'relative',
+  },
+  micRing: {
+    position: 'absolute',
+    width: 180,
+    height: 180,
+    borderRadius: 90,
+    borderWidth: 2,
+  },
+  micBtn: {
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 10,
+    shadowColor: '#6366F1',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.35,
+    shadowRadius: 14,
+  },
+  micLabel: {
+    marginTop: 20,
+    fontSize: 16,
+    fontWeight: '700',
+    letterSpacing: 0.2,
+  },
+  stopHint: {
+    marginTop: 6,
+    fontSize: 12,
+    color: '#9CA3AF',
+  },
+
+  // Text input fallback
+  inputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginHorizontal: 20,
+    marginBottom: 12,
+  },
+  inputField: {
+    flex: 1,
+    fontSize: 15,
+    color: '#111827',
+    backgroundColor: '#fff',
+    borderRadius: 24,
+    paddingHorizontal: 18,
+    paddingVertical: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    elevation: 1,
   },
   sendBtn: {
-    width: 46, height: 46, borderRadius: 23,
-    backgroundColor: theme.colors.primary[500],
+    width: 44, height: 44, borderRadius: 22,
+    backgroundColor: '#6366F1',
     justifyContent: 'center', alignItems: 'center',
+    elevation: 2,
+  },
+  sendBtnDisabled: { backgroundColor: '#D1D5DB' },
+
+  // Error
+  errorRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginHorizontal: 24,
+    marginBottom: 8,
+  },
+  errorText: { fontSize: 13, color: '#EF4444' },
+
+  // Answer card
+  answerCard: {
+    marginHorizontal: 16,
+    marginBottom: 20,
+    padding: 20,
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+  },
+  answerMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  sourceBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 10,
+  },
+  sourceText: { fontSize: 11, fontWeight: '700' },
+  replayBtn:  { padding: 4 },
+  answerText: {
+    fontSize: 16,
+    color: '#1F2937',
+    lineHeight: 26,
+    fontWeight: '400',
+  },
+  questionText: {
+    marginTop: 12,
+    fontSize: 13,
+    color: '#9CA3AF',
+    fontStyle: 'italic',
   },
 
-  transcriptBox: {
-    flexDirection: 'row', alignItems: 'center', gap: 8,
-    marginHorizontal: theme.spacing.lg, marginBottom: theme.spacing.sm,
-    padding: 12, backgroundColor: '#EFF6FF',
-    borderRadius: theme.borderRadius.lg, borderWidth: 1, borderColor: '#BFDBFE',
+  // Domain chips
+  chipsSection: {
+    paddingHorizontal: 20,
+    marginTop: 8,
   },
-  transcriptText: { flex: 1, fontSize: 14, color: '#1D4ED8', fontStyle: 'italic' },
-
-  questionBox: {
-    flexDirection: 'row', alignItems: 'center', gap: 8,
-    marginHorizontal: theme.spacing.lg, marginBottom: theme.spacing.sm,
-    padding: 10, backgroundColor: theme.colors.background.paper,
-    borderRadius: theme.borderRadius.lg,
+  chipsLabel: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#9CA3AF',
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+    marginBottom: 12,
   },
-  questionText: { flex: 1, fontSize: 13, color: theme.colors.text.secondary, fontStyle: 'italic' },
-
-  errorBox: {
-    flexDirection: 'row', alignItems: 'center', gap: 8,
-    marginHorizontal: theme.spacing.lg, marginBottom: theme.spacing.md,
-    padding: theme.spacing.md, backgroundColor: '#FEF2F2',
-    borderRadius: theme.borderRadius.lg,
-    borderLeftWidth: 3, borderLeftColor: '#DC2626',
+  chipsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
   },
-  errorText: { fontSize: 14, color: '#DC2626', flex: 1 },
-
-  responseCard: {
-    marginHorizontal: theme.spacing.lg, marginBottom: theme.spacing.lg,
-    padding: theme.spacing.lg, backgroundColor: theme.colors.background.default,
-    borderRadius: theme.borderRadius.xl, elevation: 3,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1, shadowRadius: 4,
+  chip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 16,
   },
-  responseHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: theme.spacing.sm },
-  responseIconWrap: {
-    width: 26, height: 26, borderRadius: 13,
-    justifyContent: 'center', alignItems: 'center',
-  },
-  responseTitle: { fontSize: 14, fontWeight: '700', color: theme.colors.text.primary, flex: 1 },
-  sourceTag:     { fontSize: 10, color: theme.colors.text.disabled, fontWeight: '600' },
-  replayBtn:     { padding: 4 },
-  responseText:  { fontSize: 15, color: theme.colors.text.primary, lineHeight: 24 },
-
-  domainsSection: { marginHorizontal: theme.spacing.lg, marginBottom: theme.spacing.lg },
-  sectionLabel: {
-    fontSize: 12, fontWeight: '700', color: theme.colors.text.secondary,
-    textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: theme.spacing.sm,
-  },
-  domainsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  domainCard:  { width: '30.5%', padding: 12, borderRadius: theme.borderRadius.lg, alignItems: 'center', gap: 4 },
-  domainLabel: { fontSize: 12, fontWeight: '700', textAlign: 'center' },
-  domainSub:   { fontSize: 10, color: theme.colors.text.secondary, textAlign: 'center' },
-
-  impactSection: { marginHorizontal: theme.spacing.lg },
-  statsGrid:     { flexDirection: 'row', gap: 10 },
-  statCard: {
-    flex: 1, backgroundColor: theme.colors.background.default,
-    borderRadius: theme.borderRadius.lg, padding: 12,
-    alignItems: 'center', gap: 4, elevation: 1,
-  },
-  statValue: { fontSize: 16, fontWeight: '800', color: theme.colors.primary[500] },
-  statLabel: { fontSize: 9, color: theme.colors.text.secondary, textAlign: 'center', lineHeight: 13 },
+  chipText: { fontSize: 13, fontWeight: '600' },
 });
