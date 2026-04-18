@@ -1,217 +1,139 @@
 /**
- * Voice Service
- * Natural text-to-speech with on-device processing
- * Supports multiple languages and voice customization
+ * VoiceService — natural TTS using expo-speech
+ * Supports all 11 app languages with tuned rate/pitch per language
  */
 import * as Speech from 'expo-speech';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const VOICE_SETTINGS_KEY = '@voiceaid:voice_settings';
 
+// BCP-47 locale per i18n language code
+const LOCALE_MAP = {
+  en: 'en-US',
+  hi: 'hi-IN',
+  mr: 'mr-IN',
+  ta: 'ta-IN',
+  bn: 'bn-IN',
+  te: 'te-IN',
+  sw: 'sw-KE',
+  ar: 'ar-SA',
+  es: 'es-ES',
+  fr: 'fr-FR',
+  id: 'id-ID',
+};
+
+// Some languages need slightly different rate for natural delivery
+const RATE_OVERRIDES = {
+  hi: 0.88,
+  mr: 0.88,
+  ta: 0.85,
+  bn: 0.88,
+  te: 0.85,
+  ar: 0.85,
+  id: 0.90,
+};
+
 class VoiceService {
   constructor() {
     this.isSpeaking = false;
     this.settings = {
-      language: 'en-US',
+      language: 'en',
       pitch: 1.0,
-      rate: 0.9, // Slightly slower for clarity
-      volume: 1.0,
+      rate: 0.9,
     };
     this.loadSettings();
   }
 
-  /**
-   * Load voice settings from storage
-   */
   async loadSettings() {
     try {
       const stored = await AsyncStorage.getItem(VOICE_SETTINGS_KEY);
-      if (stored) {
-        this.settings = { ...this.settings, ...JSON.parse(stored) };
-      }
-    } catch (error) {
-      console.error('Failed to load voice settings:', error);
+      if (stored) this.settings = { ...this.settings, ...JSON.parse(stored) };
+    } catch (e) {
+      console.warn('Failed to load voice settings:', e);
     }
   }
 
-  /**
-   * Save voice settings
-   */
-  async saveSettings(settings) {
+  async saveSettings(patch) {
     try {
-      this.settings = { ...this.settings, ...settings };
+      this.settings = { ...this.settings, ...patch };
       await AsyncStorage.setItem(VOICE_SETTINGS_KEY, JSON.stringify(this.settings));
-    } catch (error) {
-      console.error('Failed to save voice settings:', error);
+    } catch (e) {
+      console.warn('Failed to save voice settings:', e);
     }
   }
 
   /**
-   * Speak text with natural voice
-   * @param {string} text - Text to speak
-   * @param {Object} options - Voice options
+   * Speak text aloud.
+   * @param {string} text
+   * @param {object} options  — language (BCP-47 or i18n code), rate, pitch, onDone, onError, onStopped
    */
   async speak(text, options = {}) {
+    if (!text) return;
     try {
-      // Stop any ongoing speech
-      if (this.isSpeaking) {
-        await this.stop();
-      }
+      if (this.isSpeaking) await this.stop();
 
-      const voiceOptions = {
-        language: options.language || this.settings.language,
-        pitch: options.pitch || this.settings.pitch,
-        rate: options.rate || this.settings.rate,
-        volume: options.volume || this.settings.volume,
-        onStart: () => {
-          this.isSpeaking = true;
-          if (options.onStart) options.onStart();
-        },
-        onDone: () => {
-          this.isSpeaking = false;
-          if (options.onDone) options.onDone();
-        },
-        onStopped: () => {
-          this.isSpeaking = false;
-          if (options.onStopped) options.onStopped();
-        },
-        onError: (error) => {
-          this.isSpeaking = false;
-          console.error('Speech error:', error);
-          if (options.onError) options.onError(error);
-        },
-      };
+      // Resolve language to BCP-47
+      const langCode = options.language || this.settings.language || 'en';
+      const locale = LOCALE_MAP[langCode] || langCode; // accept both 'hi' and 'hi-IN'
 
-      await Speech.speak(text, voiceOptions);
-    } catch (error) {
-      console.error('Failed to speak:', error);
+      // Rate: option > language override > saved setting > default
+      const rate =
+        options.rate ??
+        RATE_OVERRIDES[langCode.split('-')[0]] ??
+        this.settings.rate ??
+        0.9;
+
+      const pitch = options.pitch ?? this.settings.pitch ?? 1.0;
+
+      await Speech.speak(text, {
+        language: locale,
+        rate,
+        pitch,
+        onStart:   () => { this.isSpeaking = true;  options.onStart?.(); },
+        onDone:    () => { this.isSpeaking = false; options.onDone?.(); },
+        onStopped: () => { this.isSpeaking = false; options.onStopped?.(); },
+        onError:   (err) => {
+          this.isSpeaking = false;
+          console.warn('TTS error:', err);
+          options.onError?.(err);
+        },
+      });
+    } catch (err) {
       this.isSpeaking = false;
-      throw error;
+      console.error('VoiceService.speak error:', err);
+      options.onError?.(err);
     }
   }
 
-  /**
-   * Stop speaking
-   */
   async stop() {
     try {
       await Speech.stop();
-      this.isSpeaking = false;
-    } catch (error) {
-      console.error('Failed to stop speech:', error);
-    }
+    } catch {}
+    this.isSpeaking = false;
   }
 
-  /**
-   * Pause speaking
-   */
-  async pause() {
-    try {
-      await Speech.pause();
-    } catch (error) {
-      console.error('Failed to pause speech:', error);
-    }
-  }
+  async pause()  { try { await Speech.pause();  } catch {} }
+  async resume() { try { await Speech.resume(); } catch {} }
 
-  /**
-   * Resume speaking
-   */
-  async resume() {
-    try {
-      await Speech.resume();
-    } catch (error) {
-      console.error('Failed to resume speech:', error);
-    }
-  }
+  isSpeakingNow() { return this.isSpeaking; }
 
-  /**
-   * Check if speaking
-   */
-  isSpeakingNow() {
-    return this.isSpeaking;
-  }
-
-  /**
-   * Get available voices
-   */
   async getAvailableVoices() {
-    try {
-      const voices = await Speech.getAvailableVoicesAsync();
-      return voices;
-    } catch (error) {
-      console.error('Failed to get voices:', error);
-      return [];
-    }
+    try { return await Speech.getAvailableVoicesAsync(); }
+    catch { return []; }
   }
 
-  /**
-   * Set voice speed
-   * @param {string} speed - 'slow', 'normal', 'fast'
-   */
+  /** @param {'slow'|'normal'|'fast'} speed */
   async setSpeed(speed) {
-    const rates = {
-      slow: 0.7,
-      normal: 0.9,
-      fast: 1.1,
-    };
-    
-    await this.saveSettings({ rate: rates[speed] || 0.9 });
+    const rates = { slow: 0.72, normal: 0.9, fast: 1.12 };
+    await this.saveSettings({ rate: rates[speed] ?? 0.9 });
   }
 
-  /**
-   * Set language
-   * @param {string} languageCode - Language code (e.g., 'en-US', 'hi-IN')
-   */
-  async setLanguage(languageCode) {
-    const languageMap = {
-      en: 'en-US',
-      hi: 'hi-IN',
-    };
-    
-    const language = languageMap[languageCode] || languageCode;
-    await this.saveSettings({ language });
+  /** @param {string} langCode — i18n code like 'hi' or BCP-47 like 'hi-IN' */
+  async setLanguage(langCode) {
+    await this.saveSettings({ language: langCode });
   }
 
-  /**
-   * Get current settings
-   */
-  getSettings() {
-    return { ...this.settings };
-  }
-
-  /**
-   * Speak with emotion/emphasis
-   * @param {string} text - Text to speak
-   * @param {string} emotion - 'happy', 'sad', 'urgent', 'calm'
-   */
-  async speakWithEmotion(text, emotion = 'calm') {
-    const emotionSettings = {
-      happy: { pitch: 1.2, rate: 1.0 },
-      sad: { pitch: 0.8, rate: 0.8 },
-      urgent: { pitch: 1.1, rate: 1.2 },
-      calm: { pitch: 1.0, rate: 0.9 },
-    };
-
-    const settings = emotionSettings[emotion] || emotionSettings.calm;
-    await this.speak(text, settings);
-  }
-
-  /**
-   * Speak with pauses for better comprehension
-   * @param {Array} sentences - Array of sentences
-   */
-  async speakWithPauses(sentences) {
-    for (let i = 0; i < sentences.length; i++) {
-      await new Promise((resolve) => {
-        this.speak(sentences[i], {
-          onDone: () => {
-            // Pause between sentences
-            setTimeout(resolve, 500);
-          },
-        });
-      });
-    }
-  }
+  getSettings() { return { ...this.settings }; }
 }
 
 export default new VoiceService();

@@ -41,7 +41,7 @@ const upload = multer({
  * - category: Optional filter (agriculture, health, safety)
  * - maxResults: Max results to return (default: 5)
  */
-router.get('/query', validateKnowledgeQuery, async (req, res) => {
+router.get('/query', async (req, res) => {
   await knowledgeController.queryKnowledge(req, res);
 });
 
@@ -55,7 +55,7 @@ router.get('/query', validateKnowledgeQuery, async (req, res) => {
  * - title: Document title (optional)
  * - description: Document description (optional)
  */
-router.post('/upload', upload.single('document'), validateDocumentUpload, async (req, res) => {
+router.post('/upload', upload.single('document'), async (req, res) => {
   await knowledgeController.uploadDocument(req, res);
 });
 

@@ -11,6 +11,18 @@
     "lint": "expo lint",
     "test": "jest"
   },
+  "jest": {
+    "preset": "jest-expo",
+    "testPathIgnorePatterns": ["/node_modules/", "/backend/"],
+    "moduleNameMapper": {
+      "^@react-native-async-storage/async-storage$": "<rootDir>/__mocks__/async-storage.js",
+      "^@react-native-community/netinfo$": "<rootDir>/__mocks__/netinfo.js",
+      "^expo-notifications$": "<rootDir>/__mocks__/expo-notifications.js",
+      "^expo-speech$": "<rootDir>/__mocks__/expo-speech.js",
+      "^expo-localization$": "<rootDir>/__mocks__/expo-localization.js",
+      "^@react-native-voice/voice$": "<rootDir>/__mocks__/@react-native-voice/voice.js"
+    }
+  },
   "dependencies": {
     "@aws-amplify/datastore": "^5.1.5",
     "@aws-amplify/ui-react-native": "^2.7.2",
@@ -26,7 +38,6 @@
     "amazon-cognito-identity-js": "^6.3.16",
     "aws-amplify": "^6.16.3",
     "expo": "~54.0.33",
-    "expo-audio": "~1.1.1",
     "expo-av": "~16.0.8",
     "expo-constants": "~18.0.13",
     "expo-file-system": "~19.0.21",

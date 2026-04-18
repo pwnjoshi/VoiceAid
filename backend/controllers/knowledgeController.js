@@ -1,201 +1,160 @@
-// Knowledge Controller - Handles knowledge base operations
-// Manages document retrieval, upload, and knowledge queries
+/**
+ * KnowledgeController
+ * Handles knowledge base queries and document management.
+ * Uses Bedrock RAG when configured, falls back to local JSON.
+ */
+const path = require('path');
+const fs   = require('fs');
 
-const knowledgeService = require('../services/knowledgeService');
-const s3Service = require('../services/s3Service');
+let localKnowledge = {};
+try {
+  const kbPath = path.join(__dirname, '../../src/data/offlineKnowledge.json');
+  localKnowledge = JSON.parse(fs.readFileSync(kbPath, 'utf8'));
+} catch (e) {
+  console.warn('[KnowledgeController] Could not load local knowledge base:', e.message);
+}
+
+let knowledgeService = null;
+let s3Service        = null;
+
+function getKnowledgeService() {
+  if (!knowledgeService) {
+    try { knowledgeService = require('../services/knowledgeService'); } catch {}
+  }
+  return knowledgeService;
+}
+
+function getS3Service() {
+  if (!s3Service) {
+    try { s3Service = require('../services/s3Service'); } catch {}
+  }
+  return s3Service;
+}
+
+// Simple offline search
+function offlineSearch(query) {
+  const lower = query.toLowerCase();
+  const words = lower.split(/\s+/).filter(w => w.length > 2);
+  const candidates = [];
+
+  function walk(obj, pathStr) {
+    if (typeof obj === 'string') {
+      const score = words.filter(w => obj.toLowerCase().includes(w)).length;
+      if (score > 0) candidates.push({ content: obj, score });
+    } else if (obj && typeof obj === 'object') {
+      for (const [k, v] of Object.entries(obj)) walk(v, pathStr ? `${pathStr}.${k}` : k);
+    }
+  }
+
+  walk(localKnowledge, '');
+  candidates.sort((a, b) => b.score - a.score);
+  return candidates[0]?.content || null;
+}
 
 class KnowledgeController {
+
   /**
-   * Query knowledge base
-   * GET /api/knowledge/query
+   * GET /api/knowledge/v2/query?query=...&category=...
    */
   async queryKnowledge(req, res) {
-    try {
-      const { query, category, maxResults = 5 } = req.query;
+    const { query, category } = req.query;
 
-      if (!query) {
-        return res.status(400).json({
-          success: false,
-          error: 'Query parameter is required'
-        });
-      }
-
-      const result = await knowledgeService.retrieveKnowledge(
-        query,
-        category,
-        parseInt(maxResults)
-      );
-
-      res.json({
-        success: true,
-        query: query,
-        category: category || 'all',
-        results: result.documents || [],
-        count: result.count || 0,
-        timestamp: new Date().toISOString()
-      });
-
-    } catch (error) {
-      console.error('Knowledge Query Error:', error);
-      res.status(500).json({
-        success: false,
-        error: error.message
-      });
+    if (!query) {
+      return res.status(400).json({ success: false, error: 'query is required' });
     }
+
+    console.log(`[Knowledge] query: "${query}" category=${category || 'any'}`);
+
+    // 1. Try Bedrock RAG
+    const ks = getKnowledgeService();
+    if (ks && process.env.KNOWLEDGE_BASE_ID) {
+      try {
+        const result = await ks.retrieveAndGenerate(query, category || null);
+        if (result?.answer) {
+          return res.json({
+            success:  true,
+            answer:   result.answer,
+            citations: result.citations || [],
+            source:   'aws-bedrock-rag',
+            query,
+          });
+        }
+      } catch (err) {
+        console.warn('[Knowledge] Bedrock failed, using offline:', err.message);
+      }
+    }
+
+    // 2. Offline fallback
+    const answer = offlineSearch(query);
+    return res.json({
+      success: true,
+      answer:  answer || 'No information found for that query.',
+      source:  'offline-knowledge-base',
+      query,
+    });
   }
 
   /**
-   * Upload document to knowledge base
-   * POST /api/knowledge/upload
+   * POST /api/knowledge/v2/upload
    */
   async uploadDocument(req, res) {
+    const file = req.file;
+    const { category = 'general', title } = req.body || {};
+
+    if (!file) {
+      return res.status(400).json({ success: false, error: 'Document file is required' });
+    }
+
+    const s3 = getS3Service();
+    if (!s3) {
+      return res.status(503).json({ success: false, error: 'S3 service not configured' });
+    }
+
     try {
-      const file = req.file;
-      const { category = 'general', title, description } = req.body;
-
-      if (!file) {
-        return res.status(400).json({
-          success: false,
-          error: 'Document file is required'
-        });
-      }
-
-      // Upload to S3
-      const s3Result = await s3Service.uploadDocument(
-        file.buffer,
-        file.originalname,
-        category
-      );
-
-      res.json({
+      const s3Result = await s3.uploadDocument(file.buffer, file.originalname, category);
+      return res.json({
         success: true,
-        message: 'Document uploaded successfully',
+        message: 'Document uploaded. It will be indexed in the knowledge base automatically.',
         document: {
-          key: s3Result.key,
+          key:      s3Result.key,
           filename: file.originalname,
-          size: file.size,
-          category: category,
-          title: title || file.originalname,
-          description: description || '',
-          uploadedAt: new Date().toISOString()
+          size:     file.size,
+          category,
+          title:    title || file.originalname,
+          uploadedAt: new Date().toISOString(),
         },
-        note: 'Document will be indexed in knowledge base automatically'
       });
-
-    } catch (error) {
-      console.error('Document Upload Error:', error);
-      res.status(500).json({
-        success: false,
-        error: error.message
-      });
+    } catch (err) {
+      console.error('[Knowledge] Upload error:', err);
+      return res.status(500).json({ success: false, error: err.message });
     }
   }
 
   /**
-   * List documents in knowledge base
-   * GET /api/knowledge/documents
-   */
-  async listDocuments(req, res) {
-    try {
-      const { category } = req.query;
-
-      const result = await s3Service.listDocuments(category);
-
-      res.json({
-        success: true,
-        category: category || 'all',
-        documents: result.documents || [],
-        count: result.count || 0,
-        timestamp: new Date().toISOString()
-      });
-
-    } catch (error) {
-      console.error('List Documents Error:', error);
-      res.status(500).json({
-        success: false,
-        error: error.message
-      });
-    }
-  }
-
-  /**
-   * Get document details
-   * GET /api/knowledge/documents/:key
-   */
-  async getDocumentDetails(req, res) {
-    try {
-      const { key } = req.params;
-
-      if (!key) {
-        return res.status(400).json({
-          success: false,
-          error: 'Document key is required'
-        });
-      }
-
-      // Get presigned URL for document access
-      const urlResult = await s3Service.getDocumentUrl(key);
-
-      res.json({
-        success: true,
-        document: {
-          key: key,
-          url: urlResult.url,
-          expiresIn: 3600,
-          timestamp: new Date().toISOString()
-        }
-      });
-
-    } catch (error) {
-      console.error('Get Document Error:', error);
-      res.status(500).json({
-        success: false,
-        error: error.message
-      });
-    }
-  }
-
-  /**
-   * Get knowledge base statistics
-   * GET /api/knowledge/stats
+   * GET /api/knowledge/v2/stats
    */
   async getStats(req, res) {
-    try {
-      const result = await s3Service.listDocuments();
+    const awsConfigured = !!(process.env.KNOWLEDGE_BASE_ID && process.env.AWS_ACCESS_KEY_ID);
 
-      // Count documents by category
-      const stats = {
-        totalDocuments: result.count || 0,
-        byCategory: {
-          agriculture: 0,
-          health: 0,
-          safety: 0,
-          other: 0
-        }
-      };
-
-      if (result.documents) {
-        result.documents.forEach(doc => {
-          if (doc.Key.includes('agriculture')) stats.byCategory.agriculture++;
-          else if (doc.Key.includes('health')) stats.byCategory.health++;
-          else if (doc.Key.includes('safety')) stats.byCategory.safety++;
-          else stats.byCategory.other++;
-        });
-      }
-
-      res.json({
-        success: true,
-        stats: stats,
-        timestamp: new Date().toISOString()
-      });
-
-    } catch (error) {
-      console.error('Stats Error:', error);
-      res.status(500).json({
-        success: false,
-        error: error.message
-      });
+    // Count local knowledge entries
+    let localCount = 0;
+    function countEntries(obj) {
+      if (typeof obj === 'string') { localCount++; return; }
+      if (obj && typeof obj === 'object') Object.values(obj).forEach(countEntries);
     }
+    countEntries(localKnowledge);
+
+    return res.json({
+      success: true,
+      stats: {
+        awsConfigured,
+        localKnowledgeEntries: localCount,
+        crops:    Object.keys(localKnowledge.agriculture?.crops || {}).length,
+        ailments: Object.keys(localKnowledge.health?.common_ailments || {}).length,
+        languages: 11,
+      },
+      timestamp: new Date().toISOString(),
+    });
   }
 }
 
