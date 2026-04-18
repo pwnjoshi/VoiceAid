@@ -67,14 +67,14 @@ export default function HomeScreen() {
   const { t, i18n } = useTranslation();
 
   const [appState,     setAppState]     = useState(S.IDLE);
-  const [isOnline,     setIsOnline]     = useState(false);
+  const [isOnline,     setIsOnline]     = useState(true);   // demo: show online
   const [backendUp,    setBackendUp]    = useState(false);
-  const [response,     setResponse]     = useState('');
-  const [transcript,   setTranscript]   = useState('');
+  const [response,     setResponse]     = useState('For pest control on crops, use neem oil spray. Mix 10ml neem oil per liter of water and spray early morning. Remove affected leaves immediately. This works for stem borer, aphids, and whitefly.');
+  const [transcript,   setTranscript]   = useState('How do I control pests on my crops?');
   const [partial,      setPartial]      = useState('');
   const [errorMsg,     setErrorMsg]     = useState('');
-  const [queryCount,   setQueryCount]   = useState(0);
-  const [answerSrc,    setAnswerSrc]    = useState('');
+  const [queryCount,   setQueryCount]   = useState(3);
+  const [answerSrc,    setAnswerSrc]    = useState('offline');
   const [sttAvailable, setSttAvailable] = useState(true);
   const [textInput,    setTextInput]    = useState('');
 

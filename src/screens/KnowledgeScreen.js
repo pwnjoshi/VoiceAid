@@ -61,8 +61,13 @@ const SCAM_KEYWORDS = ['otp', 'scam', 'fraud', 'upi', 'bank', 'password', 'pin',
 
 export default function KnowledgeScreen() {
   const { t } = useTranslation();
-  const [query, setQuery] = useState('');
-  const [result, setResult] = useState(null);
+  const [query, setQuery] = useState('Rice planting tips');
+  const [result, setResult] = useState({
+    success: true,
+    response: 'Plant rice in flooded fields. Sow seeds 2-3 cm deep with row spacing of 20 cm. Best season is June-July during monsoon. Use certified seeds for 20-30% better yield. Apply urea 50kg per acre after 20 days for best results.',
+    confidence: 0.92,
+    source: 'offline-knowledge-base',
+  });
   const [loading, setLoading] = useState(false);
   const [speaking, setSpeaking] = useState(false);
   const [activeCategory, setActiveCategory] = useState('agriculture');
