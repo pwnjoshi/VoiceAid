@@ -37,17 +37,7 @@ export default function RemindersScreen() {
 
   const loadReminders = async () => {
     const data = await OfflineReminderService.getReminders();
-    // Seed demo reminders for screenshots if none exist
-    if (data.length === 0) {
-      await OfflineReminderService.addReminder({ title: 'Blood Pressure Pill', message: 'Take with water', time: '08:00', category: 'medicine', frequency: 'daily' });
-      await OfflineReminderService.addReminder({ title: 'Diabetes Medication', message: 'After breakfast', time: '09:00', category: 'medicine', frequency: 'daily' });
-      await OfflineReminderService.addReminder({ title: 'Lunch Time', message: 'Eat on time', time: '13:00', category: 'meal', frequency: 'daily' });
-      await OfflineReminderService.addReminder({ title: 'Evening Walk', message: '30 minutes', time: '18:00', category: 'health', frequency: 'daily' });
-      const fresh = await OfflineReminderService.getReminders();
-      setReminders(fresh);
-    } else {
-      setReminders(data);
-    }
+    setReminders(data);
   };
 
   const openAdd = () => {
