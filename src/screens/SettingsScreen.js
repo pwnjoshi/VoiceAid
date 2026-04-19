@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { changeLanguage, getAvailableLanguages } from '../config/i18n';
 import VoiceService from '../services/VoiceService';
+import LocalLLMService from '../services/LocalLLMService';
 import theme from '../theme';
 
 const REGION_COLORS = {
@@ -30,8 +31,76 @@ export default function SettingsScreen() {
     voiceSpeed: 'normal',
   });
   const [showLangPicker, setShowLangPicker] = useState(false);
+  const [llmInfo, setLlmInfo]         = useState({ downloaded: false, sizeMB: 0, isReady: false, isEnabled: true, isLoading: false });
+  const [llmProgress, setLlmProgress] = useState(0);
+  const [llmStatus, setLlmStatus]     = useState('');
 
-  useEffect(() => { loadSettings(); }, []);
+  useEffect(() => {
+    loadSettings();
+    loadLlmInfo();
+  }, []);
+
+  const loadLlmInfo = async () => {
+    await LocalLLMService.loadPreference();
+    const info = await LocalLLMService.getModelInfo();
+    setLlmInfo(info);
+    setLlmStatus(info.isReady ? 'Ready' : info.downloaded ? 'Downloaded, not loaded' : 'Not downloaded');
+  };
+
+  const handleLlmToggle = async (enabled) => {
+    await LocalLLMService.setEnabled(enabled);
+    const info = await LocalLLMService.getModelInfo();
+    setLlmInfo(info);
+    if (!enabled) setLlmStatus('Disabled');
+  };
+
+  const handleLlmDownload = async () => {
+    Alert.alert(
+      'Download TinyLlama (600MB)',
+      'This downloads the TinyLlama 1.1B AI model. Use WiFi. Once downloaded, VoiceAid will use it for all offline conversations.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Download on WiFi',
+          onPress: async () => {
+            LocalLLMService.onProgress = (pct) => setLlmProgress(pct);
+            LocalLLMService.onStatusChange = (s) => setLlmStatus(s);
+            const ok = await LocalLLMService.initialize();
+            const info = await LocalLLMService.getModelInfo();
+            setLlmInfo(info);
+            setLlmProgress(0);
+            if (ok) {
+              setLlmStatus('Ready — TinyLlama active');
+              Alert.alert('Ready', 'TinyLlama is loaded. All voice conversations now use on-device AI.');
+            } else {
+              setLlmStatus('Failed — check connection');
+              Alert.alert('Failed', 'Could not download or load the model. Check your internet connection and try again.');
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleLlmDelete = () => {
+    Alert.alert(
+      'Delete Model',
+      `Delete TinyLlama (${llmInfo.sizeMB}MB) from device? You can re-download it later.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            await LocalLLMService.deleteModel();
+            const info = await LocalLLMService.getModelInfo();
+            setLlmInfo(info);
+            setLlmStatus('Deleted');
+          },
+        },
+      ]
+    );
+  };
 
   const loadSettings = async () => {
     try {
@@ -196,6 +265,113 @@ export default function SettingsScreen() {
           </View>
         </View>
 
+        {/* Local LLM */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Local AI Model</Text>
+
+          {/* Enable/disable toggle */}
+          <View style={styles.item}>
+            <View style={styles.itemLeft}>
+              <View style={[styles.iconWrap, { backgroundColor: '#F5F3FF' }]}>
+                <Ionicons name="hardware-chip" size={20} color="#7C3AED" />
+              </View>
+              <View>
+                <Text style={styles.itemText}>TinyLlama 1.1B</Text>
+                <Text style={styles.itemDesc}>On-device conversational AI</Text>
+              </View>
+            </View>
+            <Switch
+              value={llmInfo.isEnabled}
+              onValueChange={handleLlmToggle}
+              trackColor={{ true: '#7C3AED' }}
+            />
+          </View>
+
+          {/* Status + action */}
+          {llmInfo.isEnabled && (
+            <View style={styles.llmCard}>
+              {/* Status row */}
+              <View style={styles.llmStatusRow}>
+                <View style={[styles.llmDot, {
+                  backgroundColor: llmInfo.isReady ? '#10B981' : llmInfo.downloaded ? '#F59E0B' : '#9CA3AF'
+                }]} />
+                <Text style={styles.llmStatusText}>{llmStatus || (llmInfo.isReady ? 'Ready' : llmInfo.downloaded ? 'Downloaded' : 'Not downloaded')}</Text>
+              </View>
+
+              {/* Progress bar */}
+              {llmInfo.isLoading && llmProgress > 0 && (
+                <View style={styles.llmProgressWrap}>
+                  <View style={[styles.llmProgressBar, { width: `${llmProgress}%` }]} />
+                  <Text style={styles.llmProgressText}>{llmProgress}%</Text>
+                </View>
+              )}
+
+              {/* Info */}
+              <Text style={styles.llmInfo}>
+                {llmInfo.isReady
+                  ? `Model loaded (${llmInfo.sizeMB}MB) — all voice queries use TinyLlama`
+                  : llmInfo.downloaded
+                  ? `Model on device (${llmInfo.sizeMB}MB) — will load on next query`
+                  : 'Model not downloaded. ~600MB required. WiFi recommended.'}
+              </Text>
+
+              {/* Action buttons */}
+              <View style={styles.llmActions}>
+                {!llmInfo.downloaded && (
+                  <TouchableOpacity
+                    style={[styles.llmBtn, styles.llmBtnPrimary]}
+                    onPress={handleLlmDownload}
+                    disabled={llmInfo.isLoading}
+                  >
+                    <Ionicons name="download-outline" size={16} color="#fff" />
+                    <Text style={styles.llmBtnText}>
+                      {llmInfo.isLoading ? `Downloading ${llmProgress}%` : 'Download Model'}
+                    </Text>
+                  </TouchableOpacity>
+                )}
+                {llmInfo.downloaded && !llmInfo.isReady && (
+                  <TouchableOpacity
+                    style={[styles.llmBtn, styles.llmBtnPrimary]}
+                    onPress={async () => {
+                      LocalLLMService.onStatusChange = (s) => setLlmStatus(s);
+                      await LocalLLMService.initialize();
+                      const info = await LocalLLMService.getModelInfo();
+                      setLlmInfo(info);
+                    }}
+                    disabled={llmInfo.isLoading}
+                  >
+                    <Ionicons name="play-outline" size={16} color="#fff" />
+                    <Text style={styles.llmBtnText}>Load Model</Text>
+                  </TouchableOpacity>
+                )}
+                {llmInfo.isReady && (
+                  <TouchableOpacity
+                    style={[styles.llmBtn, styles.llmBtnSecondary]}
+                    onPress={async () => {
+                      await LocalLLMService.release();
+                      const info = await LocalLLMService.getModelInfo();
+                      setLlmInfo(info);
+                      setLlmStatus('Released from memory');
+                    }}
+                  >
+                    <Ionicons name="stop-outline" size={16} color="#7C3AED" />
+                    <Text style={[styles.llmBtnText, { color: '#7C3AED' }]}>Release</Text>
+                  </TouchableOpacity>
+                )}
+                {llmInfo.downloaded && (
+                  <TouchableOpacity
+                    style={[styles.llmBtn, styles.llmBtnDanger]}
+                    onPress={handleLlmDelete}
+                  >
+                    <Ionicons name="trash-outline" size={16} color="#DC2626" />
+                    <Text style={[styles.llmBtnText, { color: '#DC2626' }]}>Delete</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            </View>
+          )}
+        </View>
+
         {/* About */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{t('settings.about')}</Text>
@@ -268,6 +444,36 @@ const styles = StyleSheet.create({
   itemText: { fontSize: 15, fontWeight: '600', color: theme.colors.text.primary },
   itemDesc: { fontSize: 12, color: theme.colors.text.secondary, marginTop: 1 },
   itemValue: { fontSize: 14, color: theme.colors.text.secondary },
+
+  // LLM card
+  llmCard: {
+    marginHorizontal: theme.spacing.lg,
+    marginBottom: theme.spacing.md,
+    padding: 14,
+    backgroundColor: '#FAFAFA',
+    borderRadius: theme.borderRadius.lg,
+    borderWidth: 1,
+    borderColor: '#E9D5FF',
+  },
+  llmStatusRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 },
+  llmDot: { width: 8, height: 8, borderRadius: 4 },
+  llmStatusText: { fontSize: 13, fontWeight: '600', color: theme.colors.text.primary },
+  llmProgressWrap: {
+    height: 6, backgroundColor: '#E9D5FF', borderRadius: 3,
+    marginBottom: 8, overflow: 'hidden', position: 'relative',
+  },
+  llmProgressBar: { height: '100%', backgroundColor: '#7C3AED', borderRadius: 3 },
+  llmProgressText: { fontSize: 11, color: '#7C3AED', fontWeight: '700', marginTop: 2 },
+  llmInfo: { fontSize: 12, color: theme.colors.text.secondary, lineHeight: 18, marginBottom: 12 },
+  llmActions: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  llmBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: 5,
+    paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20,
+  },
+  llmBtnPrimary: { backgroundColor: '#7C3AED' },
+  llmBtnSecondary: { backgroundColor: '#F5F3FF', borderWidth: 1, borderColor: '#7C3AED' },
+  llmBtnDanger: { backgroundColor: '#FEF2F2', borderWidth: 1, borderColor: '#DC2626' },
+  llmBtnText: { fontSize: 13, fontWeight: '600', color: '#fff' },
 
   // Language picker
   langPicker: {

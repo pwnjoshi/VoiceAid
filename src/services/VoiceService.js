@@ -63,27 +63,20 @@ class VoiceService {
   }
 
   /**
-   * Speak text aloud.
+   * Speak text aloud with natural delivery.
    * @param {string} text
-   * @param {object} options  — language (BCP-47 or i18n code), rate, pitch, onDone, onError, onStopped
+   * @param {object} options
    */
   async speak(text, options = {}) {
     if (!text) return;
     try {
       if (this.isSpeaking) await this.stop();
 
-      // Resolve language to BCP-47
       const langCode = options.language || this.settings.language || 'en';
-      const locale = LOCALE_MAP[langCode] || langCode; // accept both 'hi' and 'hi-IN'
-
-      // Rate: option > language override > saved setting > default
-      const rate =
-        options.rate ??
-        RATE_OVERRIDES[langCode.split('-')[0]] ??
-        this.settings.rate ??
-        0.9;
-
-      const pitch = options.pitch ?? this.settings.pitch ?? 1.0;
+      const locale   = LOCALE_MAP[langCode] || langCode;
+      const rate     = options.rate ?? RATE_OVERRIDES[langCode.split('-')[0]] ?? this.settings.rate ?? 0.9;
+      // Slightly higher pitch for more natural, less robotic sound
+      const pitch    = options.pitch ?? 1.05;
 
       await Speech.speak(text, {
         language: locale,
@@ -94,15 +87,34 @@ class VoiceService {
         onStopped: () => { this.isSpeaking = false; options.onStopped?.(); },
         onError:   (err) => {
           this.isSpeaking = false;
-          console.warn('TTS error:', err);
           options.onError?.(err);
         },
       });
     } catch (err) {
       this.isSpeaking = false;
-      console.error('VoiceService.speak error:', err);
       options.onError?.(err);
     }
+  }
+
+  /**
+   * Speak a sentence immediately (for streaming TTS).
+   * Returns a promise that resolves when the sentence finishes speaking.
+   */
+  speakSentence(sentence, language = 'en') {
+    return new Promise((resolve) => {
+      const langCode = language;
+      const locale   = LOCALE_MAP[langCode] || langCode;
+      const rate     = RATE_OVERRIDES[langCode.split('-')[0]] ?? 0.9;
+
+      Speech.speak(sentence, {
+        language: locale,
+        rate,
+        pitch: 1.05,
+        onDone:    resolve,
+        onStopped: resolve,
+        onError:   resolve,
+      });
+    });
   }
 
   async stop() {

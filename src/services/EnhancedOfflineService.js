@@ -1,10 +1,20 @@
 /**
  * Enhanced Offline Service
  * Uses local knowledge base for detailed responses
- * Works completely offline with no API dependencies
+ * Tier 1: LocalLLMService (TinyLlama 1.1B) — if model downloaded
+ * Tier 2: Keyword-indexed knowledge base — always available
+ * Tier 3: Category fallback — always available
  */
 import offlineKnowledge from '../data/offlineKnowledge.json';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
+// Lazy-load LocalLLMService to avoid crash if llama.rn not available
+let LocalLLMService = null;
+try {
+  LocalLLMService = require('./LocalLLMService').default;
+} catch (e) {
+  console.warn('LocalLLMService not available:', e.message);
+}
 
 class EnhancedOfflineService {
   constructor() {
@@ -218,44 +228,58 @@ class EnhancedOfflineService {
 
   /**
    * Search knowledge base
-   * @param {string} query - User query
-   * @returns {Object} Best matching response
+   * Tier 1: TinyLlama LLM (if downloaded and initialized)
+   * Tier 2: Keyword index
+   * Tier 3: Category fallback
    */
   async search(query) {
+    // ── Tier 1: TinyLlama LLM ────────────────────────────────────────────────
+    if (LocalLLMService?.isReady) {
+      try {
+        const llmResponse = await LocalLLMService.generate(query);
+        if (llmResponse && llmResponse.length > 10) {
+          return {
+            success:    true,
+            response:   llmResponse,
+            confidence: 0.95,
+            source:     'tinyllama-local',
+          };
+        }
+      } catch (e) {
+        console.warn('[EnhancedOffline] LLM failed, falling back to index:', e.message);
+      }
+    }
+
+    // ── Tier 2: Keyword index ─────────────────────────────────────────────────
     const lowerQuery = query.toLowerCase();
     const words = lowerQuery.split(' ').filter(w => w.length > 2);
-    
-    // Score each indexed item
     const scores = {};
-    
+
     words.forEach(word => {
       Object.entries(this.searchIndex).forEach(([keyword, items]) => {
         if (keyword.includes(word) || word.includes(keyword)) {
           items.forEach(item => {
-            const key = item.path;
-            scores[key] = (scores[key] || 0) + 1;
+            scores[item.path] = (scores[item.path] || 0) + 1;
           });
         }
       });
     });
 
-    // Get best match
-    const bestMatch = Object.entries(scores)
-      .sort((a, b) => b[1] - a[1])[0];
+    const bestMatch = Object.entries(scores).sort((a, b) => b[1] - a[1])[0];
 
     if (bestMatch) {
       const [path, score] = bestMatch;
       const content = this.getContentByPath(path);
-      
       return {
-        success: true,
-        response: content,
+        success:    true,
+        response:   content,
         path,
         confidence: Math.min(score / words.length, 1),
-        source: 'offline-knowledge-base'
+        source:     'offline-knowledge-base',
       };
     }
 
+    // ── Tier 3: Category fallback ─────────────────────────────────────────────
     return this.getFallbackResponse(query);
   }
 

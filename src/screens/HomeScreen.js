@@ -20,6 +20,14 @@ import NetInfo from '@react-native-community/netinfo';
 import VoiceService from '../services/VoiceService';
 import EnhancedOfflineService from '../services/EnhancedOfflineService';
 import ApiService from '../services/ApiService';
+import ConversationMemory from '../services/ConversationMemory';
+import ScamGuardService from '../services/ScamGuardService';
+import RAGService from '../services/RAGService';
+import AnalyticsService from '../services/AnalyticsService';
+
+// Lazy-load LocalLLMService
+let LocalLLMService = null;
+try { LocalLLMService = require('../services/LocalLLMService').default; } catch {}
 
 // ── Safe STT import ───────────────────────────────────────────────────────────
 let ExpoSpeechRecognitionModule = null;
@@ -69,6 +77,7 @@ export default function HomeScreen() {
   const [textInput,   setTextInput] = useState('');
   const [sttReady,    setSttReady]  = useState(!!ExpoSpeechRecognitionModule);
   const [inputFocused, setInputFocused] = useState(false);
+  const [llmReady,    setLlmReady]  = useState(false);
 
   const stateRef        = useRef(S.IDLE);
   const finalTextRef    = useRef('');
@@ -179,7 +188,23 @@ export default function HomeScreen() {
     return () => unsub();
   }, []);
 
-  // ── Auto-start on mount ──────────────────────────────────────────────────────
+  // ── Auto-init TinyLlama if enabled and downloaded ───────────────────────────
+  useEffect(() => {
+    if (!LocalLLMService) return;
+    (async () => {
+      await LocalLLMService.loadPreference();
+      if (LocalLLMService.isEnabled) {
+        const downloaded = await LocalLLMService.isModelDownloaded();
+        if (downloaded && !LocalLLMService.isReady) {
+          // Model already downloaded — load it silently
+          const ok = await LocalLLMService.initialize();
+          setLlmReady(ok);
+        } else {
+          setLlmReady(LocalLLMService.isReady);
+        }
+      }
+    })();
+  }, []);
   useEffect(() => {
     if (!autoStarted.current && sttReady) {
       autoStarted.current = true;
@@ -334,17 +359,87 @@ export default function HomeScreen() {
     const text = (spokenText || '').trim();
     if (!text) { setState(S.IDLE); return; }
 
+    const startTime = Date.now();
     haptic('light');
     setState(S.PROCESSING);
+
+    // ── Scam Guard — runs FIRST, before any AI ────────────────────────────
+    const scamCheck = ScamGuardService.check(text);
+    if (scamCheck.isScam) {
+      await ScamGuardService.triggerWarning(i18n.language, text);
+      AnalyticsService.recordScamBlocked();
+      const warning = i18n.language === 'hi'
+        ? 'रुकिए! यह धोखा हो सकता है। फोन काटिए।'
+        : 'STOP! This may be a scam. Hang up now.';
+      showAnswer(warning);
+      setAnswerSrc('scam-guard');
+      setTranscript(text);
+      setState(S.SPEAKING);
+      await VoiceService.speak(warning, {
+        language: i18n.language,
+        onDone:    () => { setState(S.IDLE); setTimeout(() => startListening(), 600); },
+        onError:   () => setState(S.IDLE),
+        onStopped: () => setState(S.IDLE),
+      });
+      return;
+    }
 
     let answer = '';
     let src = 'offline';
 
     try {
+      // ── Path 1: TinyLlama streaming with RAG context ──────────────────────
+      if (LocalLLMService?.isReady && LocalLLMService.isEnabled) {
+        src = 'tinyllama-local';
+        setState(S.SPEAKING);
+
+        // RAG: get relevant knowledge chunks to ground the response
+        const { context } = RAGService.buildContext(text);
+        const augmentedQuery = context
+          ? `Relevant knowledge:\n${context}\n\nQuestion: ${text}`
+          : text;
+
+        const sentences = [];
+        let firstSentenceSpoken = false;
+
+        const fullAnswer = await LocalLLMService.generateStreaming(augmentedQuery, async (sentence) => {
+          sentences.push(sentence);
+          answer += (answer ? ' ' : '') + sentence;
+          showAnswer(answer);
+          setAnswerSrc(src);
+
+          if (!firstSentenceSpoken) {
+            firstSentenceSpoken = true;
+            VoiceService.speakSentence(sentence, i18n.language).then(() => {
+              (async () => {
+                for (let i = 1; i < sentences.length; i++) {
+                  if (stateRef.current !== S.SPEAKING) break;
+                  await VoiceService.speakSentence(sentences[i], i18n.language);
+                }
+                if (stateRef.current === S.SPEAKING) {
+                  setState(S.IDLE);
+                  setTimeout(() => { if (stateRef.current === S.IDLE) startListening(); }, 600);
+                }
+              })();
+            });
+          }
+        });
+
+        setTranscript(text);
+        const latency = Date.now() - startTime;
+        AnalyticsService.recordQuery({ source: src, latencyMs: latency, language: i18n.language });
+        ApiService.logQuery(text, fullAnswer, src).catch(() => {});
+        haptic('light');
+        return;
+      }
+
+      // ── Path 2: AWS Bedrock ───────────────────────────────────────────────
       if (isOnline && backendUp) {
         const aws = await ApiService.queryText(text, i18n.language);
         if (aws?.response) { answer = aws.response; src = 'aws'; }
       }
+
+      // ── Path 3: On-device knowledge base ─────────────────────────────────
       if (!answer) {
         const off = await EnhancedOfflineService.search(text);
         answer = off.response || 'I could not find an answer. Please try again.';
@@ -353,17 +448,21 @@ export default function HomeScreen() {
 
       showAnswer(answer);
       setAnswerSrc(src);
+      setTranscript(text);
       setState(S.SPEAKING);
+      const latency = Date.now() - startTime;
+      AnalyticsService.recordQuery({ source: src, latencyMs: latency, language: i18n.language });
       ApiService.logQuery(text, answer, src).catch(() => {});
+      ConversationMemory.add('user', text).catch(() => {});
+      ConversationMemory.add('assistant', answer).catch(() => {});
 
       await VoiceService.speak(answer, {
         language:  i18n.language,
         onDone:    () => {
           setState(S.IDLE);
-          // Auto-restart listening after answer is spoken
           setTimeout(() => {
             if (stateRef.current === S.IDLE) startListening();
-          }, 500);
+          }, 600);
         },
         onError:   () => { setState(S.IDLE); },
         onStopped: () => { setState(S.IDLE); },
@@ -397,11 +496,19 @@ export default function HomeScreen() {
             <Text style={styles.appName}>VoiceAid</Text>
             <Text style={styles.appSub}>AI Voice Assistant</Text>
           </View>
-          <View style={styles.statusRow}>
-            <View style={[styles.statusDot, { backgroundColor: isOnline ? '#10B981' : '#9CA3AF' }]} />
-            <Text style={styles.statusText}>
-              {isOnline ? (backendUp ? 'AWS' : 'Online') : 'Offline'}
-            </Text>
+          <View style={styles.topBarRight}>
+            {llmReady && (
+              <View style={styles.llmBadge}>
+                <Ionicons name="hardware-chip" size={11} color="#7C3AED" />
+                <Text style={styles.llmBadgeText}>TinyLlama</Text>
+              </View>
+            )}
+            <View style={styles.statusRow}>
+              <View style={[styles.statusDot, { backgroundColor: isOnline ? '#10B981' : '#9CA3AF' }]} />
+              <Text style={styles.statusText}>
+                {isOnline ? (backendUp ? 'AWS' : 'Online') : 'Offline'}
+              </Text>
+            </View>
           </View>
         </View>
 
@@ -500,14 +607,18 @@ export default function HomeScreen() {
           >
             {/* Source badge */}
             <View style={styles.answerMeta}>
-              <View style={[styles.sourceBadge, { backgroundColor: answerSrc === 'aws' ? '#ECFDF5' : '#EEF2FF' }]}>
+              <View style={[styles.sourceBadge, {
+                backgroundColor: answerSrc === 'aws' ? '#ECFDF5' : answerSrc === 'tinyllama-local' ? '#F5F3FF' : '#EEF2FF'
+              }]}>
                 <Ionicons
-                  name={answerSrc === 'aws' ? 'cloud-outline' : 'hardware-chip-outline'}
+                  name={answerSrc === 'aws' ? 'cloud-outline' : answerSrc === 'tinyllama-local' ? 'hardware-chip-outline' : 'hardware-chip-outline'}
                   size={12}
-                  color={answerSrc === 'aws' ? '#059669' : '#6366F1'}
+                  color={answerSrc === 'aws' ? '#059669' : answerSrc === 'tinyllama-local' ? '#7C3AED' : '#6366F1'}
                 />
-                <Text style={[styles.sourceText, { color: answerSrc === 'aws' ? '#059669' : '#6366F1' }]}>
-                  {answerSrc === 'aws' ? 'AWS Bedrock' : 'On-device AI'}
+                <Text style={[styles.sourceText, {
+                  color: answerSrc === 'aws' ? '#059669' : answerSrc === 'tinyllama-local' ? '#7C3AED' : '#6366F1'
+                }]}>
+                  {answerSrc === 'aws' ? 'AWS Bedrock' : answerSrc === 'tinyllama-local' ? 'TinyLlama' : 'On-device AI'}
                 </Text>
               </View>
               <TouchableOpacity
@@ -578,6 +689,13 @@ const styles = StyleSheet.create({
   statusRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   statusDot: { width: 7, height: 7, borderRadius: 4 },
   statusText: { fontSize: 12, fontWeight: '600', color: '#6B7280' },
+  topBarRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  llmBadge: {
+    flexDirection: 'row', alignItems: 'center', gap: 4,
+    backgroundColor: '#F5F3FF', paddingHorizontal: 8, paddingVertical: 4,
+    borderRadius: 10, borderWidth: 1, borderColor: '#E9D5FF',
+  },
+  llmBadgeText: { fontSize: 10, fontWeight: '700', color: '#7C3AED' },
 
   // Transcript
   transcriptArea: {
