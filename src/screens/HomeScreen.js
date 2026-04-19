@@ -77,6 +77,7 @@ export default function HomeScreen() {
   const inputRef        = useRef(null);
   const silenceTimer    = useRef(null);
   const userStoppedRef  = useRef(false);
+  const bargeInActiveRef = useRef(false); // true when STT is running during TTS
 
   // Animations
   const pulseAnim  = useRef(new Animated.Value(1)).current;
@@ -90,25 +91,28 @@ export default function HomeScreen() {
 
   // ── STT events ──────────────────────────────────────────────────────────────
   useSpeechRecognitionEvent('start', () => {
-    setState(S.LISTENING);
-    // Safety timeout — if no speech in 8 seconds, stop automatically
+    // Don't change state to LISTENING during barge-in (we're still SPEAKING)
+    if (!bargeInActiveRef.current) {
+      setState(S.LISTENING);
+    }
     clearTimeout(silenceTimer.current);
     silenceTimer.current = setTimeout(() => {
       if (stateRef.current === S.LISTENING) {
         ExpoSpeechRecognitionModule?.stop();
         setState(S.IDLE);
       }
+      bargeInActiveRef.current = false;
     }, 8000);
   });
 
   useSpeechRecognitionEvent('end', () => {
     clearTimeout(silenceTimer.current);
+    bargeInActiveRef.current = false;
     if (stateRef.current === S.LISTENING) {
       const text = finalTextRef.current;
       if (text) {
         processText(text);
       } else {
-        // No speech heard — just go idle, don't auto-restart
         setState(S.IDLE);
       }
     }
@@ -122,22 +126,34 @@ export default function HomeScreen() {
       partialRef.current = '';
       setTranscript(text);
       setPartial('');
+
+      // ── Barge-in: user spoke while app was speaking ───────────────────────
+      if (bargeInActiveRef.current) {
+        bargeInActiveRef.current = false;
+        VoiceService.stop().then(() => {
+          setState(S.IDLE);
+          if (text) processText(text);
+        });
+        return;
+      }
+
       if (stateRef.current === S.LISTENING) processText(text);
     } else {
       setPartial(text);
       partialRef.current = text;
-      // Reset silence timer on each partial result (user is still speaking)
       clearTimeout(silenceTimer.current);
       silenceTimer.current = setTimeout(() => {
         if (stateRef.current === S.LISTENING) {
           ExpoSpeechRecognitionModule?.stop();
         }
-      }, 3000); // 3s of silence after last partial = done speaking
+        bargeInActiveRef.current = false;
+      }, 3000);
     }
   });
 
   useSpeechRecognitionEvent('error', (event) => {
     clearTimeout(silenceTimer.current);
+    bargeInActiveRef.current = false;
     const code = event.error || '';
     if (code === 'not-allowed' || code === 'service-not-allowed') {
       setSttReady(false);
@@ -328,17 +344,44 @@ export default function HomeScreen() {
 
       await VoiceService.speak(answer, {
         language:  i18n.language,
-        onDone:    () => { setState(S.IDLE); },
+        onDone:    () => {
+          setState(S.IDLE);
+          // After speaking, start listening again automatically
+          setTimeout(() => {
+            if (stateRef.current === S.IDLE) startListening();
+          }, 500);
+        },
         onError:   () => { setState(S.IDLE); },
         onStopped: () => { setState(S.IDLE); },
       });
+
+      // ── Barge-in: start STT while speaking so user can interrupt ──────────
+      // Small delay so TTS audio starts first, then listen in background
+      setTimeout(async () => {
+        if (stateRef.current === S.SPEAKING && ExpoSpeechRecognitionModule && sttReady) {
+          try {
+            const perm = await ExpoSpeechRecognitionModule.requestPermissionsAsync();
+            if (perm.granted) {
+              bargeInActiveRef.current = true;
+              ExpoSpeechRecognitionModule.start({
+                lang:            sttLocale,
+                interimResults:  true,
+                maxAlternatives: 1,
+                continuous:      false,
+                requiresOnDeviceRecognition: false,
+                addsPunctuation: false,
+              });
+            }
+          } catch { /* barge-in failed silently */ }
+        }
+      }, 800);
 
       haptic('light');
     } catch (err) {
       console.error('processText:', err);
       setState(S.IDLE);
     }
-  }, [isOnline, backendUp, i18n.language]);
+  }, [isOnline, backendUp, i18n.language, sttReady, sttLocale]);
 
   // ── Derived ───────────────────────────────────────────────────────────────────
   const cfg        = STATE_CONFIG[state];
