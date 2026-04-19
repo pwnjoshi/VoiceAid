@@ -48,10 +48,10 @@ const LOCALE_MAP = {
 };
 
 const STATE_CONFIG = {
-  [S.IDLE]:       { color: '#6366F1', icon: 'mic-outline',  label: 'Tap to speak' },
-  [S.LISTENING]:  { color: '#3B82F6', icon: 'mic',          label: 'Listening...' },
+  [S.IDLE]:       { color: '#6366F1', icon: 'mic-outline',         label: 'Tap to speak' },
+  [S.LISTENING]:  { color: '#3B82F6', icon: 'mic',                 label: 'Listening...' },
   [S.PROCESSING]: { color: '#10B981', icon: 'ellipsis-horizontal', label: 'Thinking...' },
-  [S.SPEAKING]:   { color: '#F59E0B', icon: 'volume-high',  label: 'Speaking...' },
+  [S.SPEAKING]:   { color: '#F59E0B', icon: 'mic-outline',         label: 'Tap mic to interrupt' },
 };
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -200,6 +200,15 @@ export default function HomeScreen() {
         ])
       );
       pulseLoop.current.start();
+    } else if (state === S.SPEAKING) {
+      // Gentle slow pulse during speaking — shows it's interruptible
+      pulseLoop.current = Animated.loop(
+        Animated.sequence([
+          Animated.timing(pulseAnim, { toValue: 1.12, duration: 1200, useNativeDriver: true }),
+          Animated.timing(pulseAnim, { toValue: 1,    duration: 1200, useNativeDriver: true }),
+        ])
+      );
+      pulseLoop.current.start();
     } else if (state === S.PROCESSING) {
       pulseLoop.current?.stop();
       Animated.loop(
@@ -281,22 +290,27 @@ export default function HomeScreen() {
     }
 
     if (state === S.SPEAKING) {
-      // Stop speaking and go idle
+      // Stop TTS immediately and start listening
+      bargeInActiveRef.current = false;
+      clearTimeout(silenceTimer.current);
+      try { ExpoSpeechRecognitionModule?.stop(); } catch {}
       await VoiceService.stop();
       setState(S.IDLE);
+      setResponse('');
+      setTranscript('');
+      setPartial('');
+      finalTextRef.current = '';
+      partialRef.current = '';
+      // Start listening right away
+      setTimeout(() => startListening(), 200);
     } else if (state === S.LISTENING) {
-      // User manually stops — set IDLE immediately, then call stop()
       clearTimeout(silenceTimer.current);
-      setState(S.IDLE);           // instant visual feedback
+      setState(S.IDLE);
       userStoppedRef.current = true;
       try { ExpoSpeechRecognitionModule?.stop(); } catch {}
-      // If there's partial text, process it
       const text = finalTextRef.current || partialRef.current;
-      if (text) {
-        setTimeout(() => processText(text), 100);
-      }
+      if (text) setTimeout(() => processText(text), 100);
     } else if (state === S.IDLE) {
-      // Start fresh
       setResponse('');
       setTranscript('');
       setErrorMsg('');
@@ -346,7 +360,7 @@ export default function HomeScreen() {
         language:  i18n.language,
         onDone:    () => {
           setState(S.IDLE);
-          // After speaking, start listening again automatically
+          // Auto-restart listening after answer is spoken
           setTimeout(() => {
             if (stateRef.current === S.IDLE) startListening();
           }, 500);
@@ -354,27 +368,6 @@ export default function HomeScreen() {
         onError:   () => { setState(S.IDLE); },
         onStopped: () => { setState(S.IDLE); },
       });
-
-      // ── Barge-in: start STT while speaking so user can interrupt ──────────
-      // Small delay so TTS audio starts first, then listen in background
-      setTimeout(async () => {
-        if (stateRef.current === S.SPEAKING && ExpoSpeechRecognitionModule && sttReady) {
-          try {
-            const perm = await ExpoSpeechRecognitionModule.requestPermissionsAsync();
-            if (perm.granted) {
-              bargeInActiveRef.current = true;
-              ExpoSpeechRecognitionModule.start({
-                lang:            sttLocale,
-                interimResults:  true,
-                maxAlternatives: 1,
-                continuous:      false,
-                requiresOnDeviceRecognition: false,
-                addsPunctuation: false,
-              });
-            }
-          } catch { /* barge-in failed silently */ }
-        }
-      }, 800);
 
       haptic('light');
     } catch (err) {
@@ -434,8 +427,8 @@ export default function HomeScreen() {
 
         {/* ── Mic button ── */}
         <View style={styles.micArea}>
-          {/* Outer ring — only when listening */}
-          {state === S.LISTENING && (
+          {/* Outer ring — when listening OR speaking (tap to interrupt) */}
+          {(state === S.LISTENING || state === S.SPEAKING) && (
             <Animated.View
               style={[
                 styles.micRing,
