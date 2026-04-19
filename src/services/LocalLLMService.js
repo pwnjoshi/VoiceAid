@@ -19,7 +19,8 @@ const SYSTEM_PROMPT = `You are VoiceAid, a friendly voice assistant for rural co
 Keep answers SHORT — maximum 2 sentences.
 Use simple everyday words. No lists, no bullet points.
 Speak naturally as if talking to a friend.
-Remember what was said earlier in the conversation.`;
+Remember what was said earlier in the conversation.
+IMPORTANT: Always respond in the SAME language the user spoke in. If they spoke Hindi, reply in Hindi. If English, reply in English.`;
 
 // Lazy-load llama.rn
 let initLlama = null;
@@ -130,11 +131,21 @@ class LocalLLMService {
    * @param {function} onSentence  — called with each complete sentence
    * @returns {string} full response
    */
-  async generateStreaming(userMessage, onSentence) {
+  async generateStreaming(userMessage, onSentence, language = 'en') {
     if (!this.isReady || !this.context) throw new Error('Model not ready');
 
-    // Load conversation history
-    const prompt = ConversationMemory.buildPrompt(SYSTEM_PROMPT, userMessage);
+    // Build language-specific system prompt
+    const langNames = {
+      en: 'English', hi: 'Hindi', mr: 'Marathi', ta: 'Tamil', bn: 'Bengali',
+      te: 'Telugu', sw: 'Swahili', ar: 'Arabic', es: 'Spanish', fr: 'French', id: 'Indonesian',
+    };
+    const langName = langNames[language] || 'English';
+    const langInstruction = language !== 'en'
+      ? `\nCRITICAL RULE: The user spoke in ${langName}. You MUST reply ONLY in ${langName}. Never use English words in your reply.`
+      : '';
+
+    const systemWithLang = SYSTEM_PROMPT + langInstruction;
+    const prompt = ConversationMemory.buildPrompt(systemWithLang, userMessage);
 
     let buffer = '';
     let fullResponse = '';
